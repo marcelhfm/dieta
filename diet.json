@@ -1,0 +1,11 @@
+{
+    "SCREENLOGGING":     "info"
+    ,"FILELOGGING":       "info"
+    ,"LOGGER":            "weatherapp"
+ 
+    ,"DBHOST":            "192.168.10.221"
+    ,"DBNAME":            "joule"
+    ,"DBUSER":            "joule"
+    ,"DBPASSWD":          "8hiN>^rJn_+4"
+ }
+ 
