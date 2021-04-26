@@ -12,6 +12,7 @@ module_logger = logging.getLogger('diet.dietDB')
 
 class Database():
 
+    # Init database - drop and recreate table
     def initDB(self):
         try:
             self.cursor=self.conn.cursor()
@@ -24,13 +25,18 @@ class Database():
             return False
 
         try:
+            # id is incremented automatically
+            # user and food is mandatory - must not be NULL
+            # refdate is updated automatically with each insert or update
             sql = ("CREATE TABLE IF NOT EXISTS `joule`.`food` ( "
                    "  `id` int(11) NOT NULL AUTO_INCREMENT, "
-                   "  `food` varchar(50) DEFAULT NULL, "
+                   "  `user` varchar(50) DEFAULT NOT NULL"
+                   "  `food` varchar(50) DEFAULT NOT NULL, "
                    "  `calories` decimal(14,8) DEFAULT NULL, "
                    "  `carbs` decimal(14,8) DEFAULT NULL, "
                    "  `protein` decimal(14,8) DEFAULT NULL, "
                    "  `fat` decimal(14,8) DEFAULT NULL, "
+                   "  `refdate` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP, "
                    "  PRIMARY KEY (`id`) "
                    ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
             self.logger.debug("SQL=" + sql)
@@ -40,20 +46,15 @@ class Database():
             self.logger.critical("Could not create table diet! " + ex.__class__)
             return False
 
+    # Initialize DB connection
     def __init__(self, config):
-        self.logger = logging.getLogger('weatherApp.weatherDB.Database')
+        self.logger = logging.getLogger('dieta.dietDB.Database')
         self.logger.debug("Logging is enabled in module " + __name__)
 
-        if (config.getItem("SIMULATE") == 1):
-            dbhost = config.getItem("SIMULATE_DBHOST")
-            dbuser = config.getItem("SIMULATE_DBUSER")
-            dbpasswd = config.getItem("SIMULATE_DBPASSWD")
-            dbname = config.getItem("SIMULATE_DBNAME")
-        else:
-            dbhost = config.getItem("DBHOST")
-            dbuser = config.getItem("DBUSER")
-            dbpasswd = config.getItem("DBPASSWD")
-            dbname = config.getItem("DBNAME")
+        dbhost = config.getItem("DBHOST")
+        dbuser = config.getItem("DBUSER")
+        dbpasswd = config.getItem("DBPASSWD")
+        dbname = config.getItem("DBNAME")
 
         try:
             self.conn=pymysql.connect(host = dbhost,
@@ -67,7 +68,7 @@ class Database():
         except Exception as ex:
             self.logger.critical("Could not establish database connection! " + ex.__class__)
 
-
+    # Close DB connection
     def closeConnection(self):
         try:
             self.cursor.close()
@@ -82,35 +83,27 @@ class Database():
 
         self.logger.debug("Database connection closed...")
 
-
+    # Insert a new dataset (json record) into database
+    # Return the last row id after insert completion
     def insertData(self, json_data):
         self.logger.debug("JSON data: " + json_data)
-        if not "sensor_id" in json_data:
-            json_data["sensor_id"]= "unknown"
+        if not "calories" in json_data:
+            json_data["calories"]= "NULL"
             self.logger.error("Insert data: No sensor id given!")
-        if not "temperature" in json_data:
-            json_data["temperature"]= "NULL"
-        if not "humidity" in json_data or json_data["humidity"] == -99.0:
-            json_data["humidity"]= "NULL"
-        if not "pressure" in json_data or json_data["pressure"] == -99.0:
-            json_data["pressure"]= "NULL"
-        if not "iaq" in json_data or json_data["iaq"] == -99.0:
-            json_data["iaq"]= "NULL"
-        if not "devicetype" in json_data:
-            json_data["devicetype"]= "NULL"
-        if not "source" in json_data:
-            json_data["source"]= "olimex"
+        if not "carbs" in json_data:
+            json_data["carbs"]= "NULL"
+        if not "protein" in json_data:
+            json_data["protein"]= "NULL"
+        if not "fat" in json_data:
+            json_data["fat"]= "NULL"
 
-        sql= ("insert into weatherdata (sensor_id, temperature, humidity, pressure, devicetype, source, refDate, secs, refSecs)" + " values ('" +
-            json_data["sensor_id"] + "'," +
-            str(json_data["temperature"]) + "," +
-            str(json_data["humidity"]) + "," +
-            str(json_data["pressure"]) + ",'" +
-            str(json_data["devicetype"]) + "','" +
-            str(json_data["source"]) + "','" +
-            str(json_data["refDate"]) + "'," +
-            str(json_data["secs"]) + "," +
-            str(json_data["refSecs"]) + ")")
+        sql= ("insert into food (user, food, calories, carbs, protein, fat, refdate)" + " values ('" +
+            json_data["user"] + "'," +
+            json_data["food"] + "," +
+            str(json_data["calories"]) + "," +
+            str(json_data["carbs"]) + ",'" +
+            str(json_data["protein"]) + "','" +
+            str(json_data["fat"]) + ")")
 
         re.sub(r'"NULL"', 'NULL', sql)
         self.logger.debug("SQL=" + sql)
@@ -132,3 +125,25 @@ class Database():
 
         self.logger.info("Dataset successfully committed to database!")
         return self.cursor.lastrowid
+
+    # Select a new dataset based on user and food and return json record
+    def selectData(self, selectuser, selectfood):
+        self.logger.debug("user: " + user + "; food: " + food)
+
+        sql= ("select * from food where `user` like selectuser and `food` like selectfood")
+
+        self.logger.debug("SQL=" + sql)
+
+        try:
+            self.cursor=self.conn.cursor()
+            self.cursor.execute(sql)
+
+            result = [dict((self.cursor.description[i][0], value) \
+               for i, value in enumerate(row)) for row in self.cursor.fetchall()]
+
+            self.logger.debug("Database select completed...")
+        except Exception as ex:
+            self.logger.critical("Could not select data from database table: " + ex.__class__)
+            return -1
+
+        return result
