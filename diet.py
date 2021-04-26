@@ -44,16 +44,78 @@ class diet():
         daily_df["fats"] = daily_df.calories * daily_df.fats_pctg / 9.3
         daily_df["carbs"] = (daily_df.calories - (daily_df.protein * 4.1) - (daily_df.fats * 9.3)) / 4.1 
 
+        #Creatin macro_df dataframe
+
+        indices = [1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 4.1, 4.2, 4.3, 5.1, 5.2, 5.3, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3, 9.1, 9.2, 9.3]
+        macro_df = pd.DataFrame(index=indices)
+        cals = [daily_df.calories[0], daily_df.calories[0], daily_df.calories[0],
+         daily_df.calories[1] - 0.2 * daily_df.calories[1], daily_df.calories[1], daily_df.calories[1] + 0.2 * daily_df.calories[1],
+          daily_df.calories[2] - 0.2 * daily_df.calories[2], daily_df.calories[2], daily_df.calories[2] + 0.2 * daily_df.calories[2], 
+           daily_df.calories[3] - 0.2 * daily_df.calories[3], daily_df.calories[3], daily_df.calories[3] + 0.2 * daily_df.calories[3],
+            daily_df.calories[4], daily_df.calories[4], daily_df.calories[4],
+             daily_df.calories[5] - 0.2 * daily_df.calories[5], daily_df.calories[5], daily_df.calories[5] + 0.2 * daily_df.calories[5],
+              daily_df.calories[6] - 0.2 * daily_df.calories[6], daily_df.calories[6], daily_df.calories[6] + 0.2 * daily_df.calories[6],
+               daily_df.calories[7] - 0.2 * daily_df.calories[7], daily_df.calories[7], daily_df.calories[7] + 0.2 * daily_df.calories[7],
+                daily_df.calories[8] - 0.2 * daily_df.calories[8], daily_df.calories[8], daily_df.calories[8] + 0.2 * daily_df.calories[8]]
         
+        macro_df["calories"] = cals
+        macro_df["protein"] = 0
+        macro_df["carbs"] = 0
+        macro_df["fats"] = 0
+
+        for i in range(len(indices)):
+            if i < 4:
+                macro_df["protein"].iloc[i] = daily_df["protein"].iloc[0]
+            elif i < 7:
+                macro_df["protein"].iloc[i] = daily_df["protein"].iloc[1]
+            elif i < 10:
+                macro_df["protein"].iloc[i] = daily_df["protein"].iloc[2]
+            elif i < 13:
+                macro_df["protein"].iloc[i] = daily_df["protein"].iloc[3]
+            elif i < 16:
+                macro_df["protein"].iloc[i] = daily_df["protein"].iloc[4]
+            elif i < 19:
+                macro_df["protein"].iloc[i] = daily_df["protein"].iloc[5]
+            elif i < 22:
+                macro_df["protein"].iloc[i] = daily_df["protein"].iloc[6]
+            elif i < 25:
+                macro_df["protein"].iloc[i] = daily_df["protein"].iloc[7]
+            else: 
+                macro_df["protein"].iloc[i] = daily_df["protein"].iloc[8]
+        
+        for i in range(len(indices)):
+            if i < 4:
+                macro_df["fats"].iloc[i] = macro_df.calories.iloc[i] * daily_df.fats_pctg.iloc[0] / 9.3 + 1
+            elif i < 7:
+                macro_df["fats"].iloc[i] = macro_df.calories.iloc[i] * daily_df.fats_pctg.iloc[1] / 9.3 + 1
+            elif i < 10:
+                macro_df["fats"].iloc[i] = macro_df.calories.iloc[i] * daily_df.fats_pctg.iloc[2] / 9.3 + 1
+            elif i < 13:
+                macro_df["fats"].iloc[i] = macro_df.calories.iloc[i] * daily_df.fats_pctg.iloc[3] / 9.3 + 1
+            elif i < 16:
+                macro_df["fats"].iloc[i] = macro_df.calories.iloc[i] * daily_df.fats_pctg.iloc[4] / 9.3 + 1
+            elif i < 19:
+                macro_df["fats"].iloc[i] = macro_df.calories.iloc[i] * daily_df.fats_pctg.iloc[5] / 9.3 + 1 
+            elif i < 22:
+                macro_df["fats"].iloc[i] = macro_df.calories.iloc[i] * daily_df.fats_pctg.iloc[6] / 9.3 + 1
+            elif i < 25:
+                macro_df["fats"].iloc[i] = macro_df.calories.iloc[i] * daily_df.fats_pctg.iloc[7] / 9.3 + 1
+            else: 
+                macro_df["fats"].iloc[i] = macro_df.calories.iloc[i] * daily_df.fats_pctg.iloc[8] / 9.3 + 1
+
+        macro_df["carbs"] = (macro_df["calories"] - (macro_df["protein"] * 4.1) - (macro_df["fats"] * 9.3)) / 4.1
 
         #Cleanup
-
+        daily_df = daily_df.drop(["fats_pctg", "protein_per_kg"], axis=1)
 
         #rounding dataframes
-        daily_df = daily_df.round({"loss":4, "deficit": 0, "weight": 2})
-        weekly_df = weekly_df.round(1)
+        daily_df = daily_df.round(0)
+        weekly_df = weekly_df.round({"loss":4, "deficit": 0, "weight": 2})
+        macro_df = macro_df.round(0)
+
         print(weekly_df)
         print(daily_df)
+        print(macro_df)
 
 
 test = diet()
