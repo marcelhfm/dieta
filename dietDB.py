@@ -20,28 +20,24 @@ class Database():
             self.cursor.execute(sql)
             self.conn.commit()
         except Exception as ex:
-            self.logger.critical("Could not drop weatherdata table for recreation! " +  ex.__class__)
+            self.logger.critical("Could not drop diet table for recreation! " +  ex.__class__)
             return False
 
         try:
             sql = ("CREATE TABLE IF NOT EXISTS `joule`.`food` ( "
                    "  `id` int(11) NOT NULL AUTO_INCREMENT, "
-                   "  `sensor_id` varchar(50) DEFAULT NULL, "
-                   "  `temperature` decimal(14,8) DEFAULT NULL, "
-                   "  `humidity` decimal(14,8) DEFAULT NULL, "
-                   "  `pressure` decimal(14,8) DEFAULT NULL, "
-                   "  `date` datetime DEFAULT CURRENT_TIMESTAMP, "
-                   "  `devicetype` varchar(50) DEFAULT NULL, "
-                   "  `source` varchar(50) NOT NULL, "
-                   "  `createdAt` datetime, "
-                   "  `updatedAt` datetime, "
+                   "  `food` varchar(50) DEFAULT NULL, "
+                   "  `calories` decimal(14,8) DEFAULT NULL, "
+                   "  `carbs` decimal(14,8) DEFAULT NULL, "
+                   "  `protein` decimal(14,8) DEFAULT NULL, "
+                   "  `fat` decimal(14,8) DEFAULT NULL, "
                    "  PRIMARY KEY (`id`) "
                    ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
             self.logger.debug("SQL=" + sql)
             self.cursor.execute(sql)
             self.conn.commit()
         except Exception as ex:
-            self.logger.critical("Could not create table weatherdata! " + ex.__class__)
+            self.logger.critical("Could not create table diet! " + ex.__class__)
             return False
 
     def __init__(self, config):
