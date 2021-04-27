@@ -129,5 +129,3 @@ dmypy.json
 .pyre/
 
 diet.json
-diet.conf
-.conf

@@ -30,8 +30,7 @@ class Database():
             # refdate is updated automatically with each insert or update
             sql = ("CREATE TABLE IF NOT EXISTS `joule`.`food` ( "
                    "  `id` int(11) NOT NULL AUTO_INCREMENT, "
-                   "  `user` varchar(50) DEFAULT NOT NULL"
-                   "  `food` varchar(50) DEFAULT NOT NULL, "
+                   "  `food` varchar(50) NOT NULL, "
                    "  `calories` decimal(14,8) DEFAULT NULL, "
                    "  `carbs` decimal(14,8) DEFAULT NULL, "
                    "  `protein` decimal(14,8) DEFAULT NULL, "
