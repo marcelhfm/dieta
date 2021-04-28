@@ -110,6 +110,8 @@ def main():
     dbConnect.insertData(testrecord)
     testrecord = json.loads('{"food": "test3", "calories": 1000, "fat": 1000, "carbs": 1000}')
     dbConnect.insertData(testrecord)
+    testrecord = json.loads('{"food": "test4", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertData(testrecord)
 
     print(dbConnect.selectData('%'))
     # change the JSON string into a JSON object
