@@ -23,5 +23,10 @@ def create_app(test_config=None):
         pass
     
     
+    #Authorization
+    from . import auth
+    app.register_blueprint(auth.bp)
+    
+    
     
     return app
