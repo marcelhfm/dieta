@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
+import json
 import pymysql
 from time import gmtime, strftime
 import re
@@ -21,7 +21,7 @@ class Database():
             self.cursor.execute(sql)
             self.conn.commit()
         except Exception as ex:
-            self.logger.critical("Could not drop diet table for recreation! " +  ex.__class__)
+            self.logger.critical("Could not drop diet table for recreation! " +  str(ex))
             return False
 
         try:
@@ -35,20 +35,21 @@ class Database():
                    "  `carbs` decimal(14,8) DEFAULT NULL, "
                    "  `protein` decimal(14,8) DEFAULT NULL, "
                    "  `fat` decimal(14,8) DEFAULT NULL, "
-                   "  `refdate` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP, "
+                   "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
                    "  PRIMARY KEY (`id`) "
                    ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
             self.logger.debug("SQL=" + sql)
             self.cursor.execute(sql)
             self.conn.commit()
         except Exception as ex:
-            self.logger.critical("Could not create table diet! " + ex.__class__)
+            self.logger.critical("Could not create table diet! " + str(ex))
             return False
 
     # Initialize DB connection
     def __init__(self, config):
-        self.logger = logging.getLogger('dieta.dietDB.Database')
+        self.logger = logging.getLogger('diet.dietDB')
         self.logger.debug("Logging is enabled in module " + __name__)
+        self.logger.setLevel(logging.DEBUG)
 
         dbhost = config.getItem("DBHOST")
         dbuser = config.getItem("DBUSER")
@@ -65,19 +66,19 @@ class Database():
             self.cursor=self.conn.cursor()
             self.logger.debug("Connection to database established...")
         except Exception as ex:
-            self.logger.critical("Could not establish database connection! " + ex.__class__)
+            self.logger.critical("Could not establish database connection! " + str(ex))
 
     # Close DB connection
     def closeConnection(self):
         try:
             self.cursor.close()
         except Exception as ex:
-            self.logger.critical("Could not close cursor! " + ex.__class__)
+            self.logger.critical("Could not close cursor! " + str(ex))
 
         try:
             self.conn.close()
         except Exception as ex:
-            self.logger.critical("Could not close database connection! " + ex.__class__)
+            self.logger.critical("Could not close database connection! " + str(ex))
             return
 
         self.logger.debug("Database connection closed...")
@@ -85,10 +86,10 @@ class Database():
     # Insert a new dataset (json record) into database
     # Return the last row id after insert completion
     def insertData(self, json_data):
-        self.logger.debug("JSON data: " + json_data)
+        self.logger.debug("JSON data: " + json.dumps(json_data))
         if not "calories" in json_data:
             json_data["calories"]= "NULL"
-            self.logger.error("Insert data: No sensor id given!")
+            self.logger.error("Insert data: No calories given!")
         if not "carbs" in json_data:
             json_data["carbs"]= "NULL"
         if not "protein" in json_data:
@@ -96,53 +97,58 @@ class Database():
         if not "fat" in json_data:
             json_data["fat"]= "NULL"
 
-        sql= ("insert into food (user, food, calories, carbs, protein, fat, refdate)" + " values ('" +
-            json_data["user"] + "'," +
-            json_data["food"] + "," +
+        sql= ("insert into food (food, calories, carbs, protein, fat)" + " values ('" +
+            json_data["food"] + "'," +
             str(json_data["calories"]) + "," +
-            str(json_data["carbs"]) + ",'" +
-            str(json_data["protein"]) + "','" +
+            str(json_data["carbs"]) + "," +
+            str(json_data["protein"]) + "," +
             str(json_data["fat"]) + ")")
 
         re.sub(r'"NULL"', 'NULL', sql)
         self.logger.debug("SQL=" + sql)
+        print("SQL=" + sql)
 
         try:
             self.cursor=self.conn.cursor()
             self.cursor.execute(sql)
             self.logger.debug("Database insert completed...")
         except Exception as ex:
-            self.logger.critical("Could not insert data into database table: " + ex.__class__)
+            self.logger.critical("Could not insert data into database table: " + str(ex))
             return -1
 
         try:
             self.conn.commit()
             self.logger.debug("Database insert committed...")
         except Exception as ex:
-            self.logger.critical("Could not commit last insert: " + ex.__class__)
+            self.logger.critical("Could not commit last insert: " + str(ex))
             return -1
 
         self.logger.info("Dataset successfully committed to database!")
         return self.cursor.lastrowid
 
     # Select a new dataset based on user and food and return json record
-    def selectData(self, selectuser, selectfood):
-        self.logger.debug("user: " + user + "; food: " + food)
+    def selectData(self, selectfood):
+        self.logger.debug("food: " + selectfood)
 
-        sql= ("select * from food where `user` like selectuser and `food` like selectfood")
+        if (selectfood == "%"):
+            sql= ("select * from food")
+            #sql= ('SELECT JSON_ARRAYAGG(JSON_OBJECT("id", `id`, "food", `food`, "calories", `calories`, "carbs", `carbs`, "protein", `protein`, "fat, `fat`, "refdate", `refdate`)) FROM food')
+        else:
+            sql= ("select * from food where `food` like " + selectfood)
 
         self.logger.debug("SQL=" + sql)
 
         try:
             self.cursor=self.conn.cursor()
             self.cursor.execute(sql)
-
-            result = [dict((self.cursor.description[i][0], value) \
-               for i, value in enumerate(row)) for row in self.cursor.fetchall()]
+     
+            result = self.cursor.fetchall()
+            #result = [dict((self.cursor.description[i][0], value) \
+            #   for i, value in enumerate(row)) for row in self.cursor.fetchall()]
 
             self.logger.debug("Database select completed...")
         except Exception as ex:
-            self.logger.critical("Could not select data from database table: " + ex.__class__)
+            self.logger.critical("Could not select data from database table: " + str(ex))
             return -1
 
         return result
