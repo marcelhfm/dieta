@@ -134,7 +134,12 @@ class Database():
             sql= ("select * from food")
             #sql= ('SELECT JSON_ARRAYAGG(JSON_OBJECT("id", `id`, "food", `food`, "calories", `calories`, "carbs", `carbs`, "protein", `protein`, "fat, `fat`, "refdate", `refdate`)) FROM food')
         else:
-            sql= ("select * from food where `food` like " + selectfood)
+            m = re.search('[^a-zäöüßA-ZÄÖÜ%-]', selectfood)
+            if (m.group(0) != ""):
+                self.logger.critical("%s contains illeagal characters which makes select statement tainted!" % selectfood)
+                return json.loads('{"Result": "invalid search string: %s"}' % selectfood)
+            else:
+                sql= ("select * from food where `food` like " + selectfood)
 
         self.logger.debug("SQL=" + sql)
 

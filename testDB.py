@@ -113,7 +113,7 @@ def main():
     testrecord = json.loads('{"food": "test4", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
     dbConnect.insertData(testrecord)
 
-    print(dbConnect.selectData('%'))
+    print(dbConnect.selectData('%1'))
     # change the JSON string into a JSON object
     #jsonObject = json.loads(dbConnect.selectData('%'))
     jsonObject = dbConnect.selectData('%')
@@ -124,7 +124,7 @@ def main():
         for key in obj:
             value = obj[key]
             if (key != "id"):
-                print("{}: ({}) = ({})".format(id, key, value))
+                print("{:3}: {:8} = {}".format(id, key, value))
 
     #for obj in jsonObject:
     #   print("{:3} food:{:5.2} calories:{:5.2} carbs:{:5.2} protein:{:5.2} fat:{:5.2} date:{:%Y-%m-%d %H:%M:%S}".format(obj["id"], obj["food"], obj["calories"], obj["carbs"], obj["protein"], obj["fat"], obj["refdate"]))
