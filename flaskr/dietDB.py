@@ -12,6 +12,36 @@ module_logger = logging.getLogger('diet.dietDB')
 
 class Database():
 
+    def init_userDB(self):
+        try:
+            self.cursor = self.conn.cursor()
+            sql = "DROP TABLE IF EXISTS `joule`.`user`"
+            self.logger.debug("SQL=" + sql)
+            self.cursor.execute(sql)
+            self.conn.commit()
+        except Exception as ex:
+            self.logger.critical(
+                "Could not drop user table for recreation! " + str(ex))
+            return False
+        
+        try:
+            # id is incremented automatically
+            # user and food is mandatory - must not be NULL
+            # refdate is updated automatically with each insert or update
+            sql = ("CREATE TABLE IF NOT EXISTS `joule`.`user` ( "
+                   "  `id` int(11) NOT NULL AUTO_INCREMENT, "
+                   "  `username` varchar(50) NOT NULL, "
+                   "  `password` varchar(50) DEFAULT NULL, "
+                   "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
+                   "  PRIMARY KEY (`id`) "
+                   ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
+            self.logger.debug("SQL=" + sql)
+            self.cursor.execute(sql)
+            self.conn.commit()
+        except Exception as ex:
+            self.logger.critical("Could not create table diet! " + str(ex))
+            return False
+
     # Init database - drop and recreate table
     def initDB(self):
         try:
