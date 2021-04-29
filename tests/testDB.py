@@ -14,7 +14,7 @@ import datetime
 import platform
 import getopt
 
-import dietDB
+import flaskr.dietDB
 
 version = "1.0.1"
 
@@ -102,7 +102,7 @@ def main():
     logger.debug("Logging is enabled in Module: " + __name__)
 
 
-    dbConnect = dietDB.Database(config)
+    dbConnect = flaskr.dietDB.Database(config)
     #dbConnect.initDB()
     testrecord = json.loads('{"food": "test1", "calories": 10}')
     dbConnect.insertData(testrecord)
