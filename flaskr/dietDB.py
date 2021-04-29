@@ -12,7 +12,7 @@ module_logger = logging.getLogger('diet.dietDB')
 
 class Database():
 
-    def init_userDB(self):
+    def initDB(self):
         """Init userDB - drop and recreate table
         """
         try:
@@ -33,7 +33,7 @@ class Database():
             sql = ("CREATE TABLE IF NOT EXISTS `joule`.`user` ( "
                    "  `id` int(11) NOT NULL AUTO_INCREMENT, "
                    "  `username` varchar(50) NOT NULL, "
-                   "  `password` varchar(50) DEFAULT NULL, "
+                   "  `password` varchar(50) NOT NULL, "
                    "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
                    "  PRIMARY KEY (`id`) "
                    ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
@@ -44,8 +44,6 @@ class Database():
             self.logger.critical("Could not create table diet! " + str(ex))
             return False
 
-    # Init database - drop and recreate table
-    def initDB(self):
         try:
             self.cursor=self.conn.cursor()
             sql = "DROP TABLE IF EXISTS `joule`.`food`"
@@ -123,16 +121,11 @@ class Database():
             
         """
         self.logger.debug("JSON data:" + json.dumps(json_data))
-        if not "username" in json_data:
-            json_data["username"]="NULL"
-        if not "password" in json_data:
-            json_data["password"]="NULL"
             
         sql = ("insert into user (username, password)" + " values ('" +
-               json_data["username"] + "'," +
-               json_data["password"] + ")")
+               json_data["username"] + "','" +
+               json_data["password"] + "')")
         
-        re.sub(r'"NULL"', 'NULL', sql)
         self.logger.debug("SQL" + sql)
         print("SQL" + sql)
         
