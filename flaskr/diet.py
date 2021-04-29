@@ -9,6 +9,13 @@ class diet():
 
 
     def configure(self, bodyweight, maintenance):
+        """Builds 3 df containing daily nutrient and calorie goals. Calculates weight loss goals.
+
+        Args:
+            bodyweight (double): bodyweight at the start of diet
+            maintenance (int): calories needed to maintain current bodyweight
+        """
+        
         #Starting data
         ind = ["Week_1", "Week_2", "Week_3", "Week_4", "Week_5", "Week_6", "Week_7", "Week_8", "Week_9"]
         loss_pctg_w =  {"loss" :[(7700/7000)/bodyweight, 0.01, 0.01, 0.01, 0.0, 0.008, 0.0075, 0.006, 0.005]}
@@ -44,8 +51,7 @@ class diet():
         daily_df["fats"] = daily_df.calories * daily_df.fats_pctg / 9.3
         daily_df["carbs"] = (daily_df.calories - (daily_df.protein * 4.1) - (daily_df.fats * 9.3)) / 4.1 
 
-        #Creatin macro_df dataframe
-
+        #Creating macro_df dataframe
         indices = [1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 4.1, 4.2, 4.3, 5.1, 5.2, 5.3, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3, 9.1, 9.2, 9.3]
         macro_df = pd.DataFrame(index=indices)
         cals = [daily_df.calories[0], daily_df.calories[0], daily_df.calories[0],
