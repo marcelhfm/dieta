@@ -33,7 +33,7 @@ class Database():
             sql = ("CREATE TABLE IF NOT EXISTS `joule`.`user` ( "
                    "  `id` int(11) NOT NULL AUTO_INCREMENT, "
                    "  `username` varchar(50) NOT NULL, "
-                   "  `password` varchar(50) DEFAULT NULL, "
+                   "  `password` varchar(50) NOT NULL, "
                    "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
                    "  PRIMARY KEY (`id`) "
                    ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
@@ -129,8 +129,8 @@ class Database():
             json_data["password"]="NULL"
             
         sql = ("insert into user (username, password)" + " values ('" +
-               json_data["username"] + "'," +
-               json_data["password"] + ")")
+               json_data["username"] + "', '" +
+               json_data["password"] + "')")
         
         re.sub(r'"NULL"', 'NULL', sql)
         self.logger.debug("SQL" + sql)
