@@ -1,0 +1,101 @@
+[
+    {
+    "id":1,
+    "food":"Apfel",
+    "calories":10.00000000,
+    "carbs":"",
+    "protein":"",
+    "fat":"",
+    "refdate":"2021-04-28 16:18:33"
+    },
+    {
+    "id":2,
+    "food":"Birne",
+    "calories":100.00000000,
+    "carbs":"",
+    "protein":"",
+    "fat":100.00000000,
+    "refdate":"2021-04-28 16:18:33"
+    },
+    {
+    "id":3,
+    "food":"Weizenbrot",
+    "calories":1000.00000000,
+    "carbs":1000.00000000,
+    "protein":"",
+    "fat":1000.00000000,
+    "refdate":"2021-04-28 16:18:33"
+    },
+    {
+    "id":4,
+    "food":"Tomate",
+    "calories":10.00000000,
+    "carbs":"",
+    "protein":"",
+    "fat":"",
+    "refdate":"2021-04-28 17:01:36"
+    },
+    {
+    "id":5,
+    "food":"Schinken",
+    "calories":100.00000000,
+    "carbs":"",
+    "protein":"",
+    "fat":100.00000000,
+    "refdate":"2021-04-28 17:01:36"
+    },
+    {
+    "id":6,
+    "food":"Camenbert",
+    "calories":1000.00000000,
+    "carbs":1000.00000000,
+    "protein":"",
+    "fat":1000.00000000,
+    "refdate":"2021-04-28 17:01:36"
+    },
+    {
+    "id":7,
+    "food":"Brie",
+    "calories":10.00000000,
+    "carbs":"",
+    "protein":"",
+    "fat":"",
+    "refdate":"2021-04-28 17:02:35"
+    },
+    {
+    "id":8,
+    "food":"Pute",
+    "calories":100.00000000,
+    "carbs":"",
+    "protein":"",
+    "fat":100.00000000,
+    "refdate":"2021-04-28 17:02:35"
+    },
+    {
+    "id":9,
+    "food":"Erdbeere",
+    "calories":1000.00000000,
+    "carbs":1000.00000000,
+    "protein":"",
+    "fat":1000.00000000,
+    "refdate":"2021-04-28 17:02:35"
+    },
+    {
+    "id":10,
+    "food":"Emmernudeln",
+    "calories":10000.00000000,
+    "carbs":10000.00000000,
+    "protein":10000.00000000,
+    "fat":10000.00000000,
+    "refdate":"2021-04-28 17:02:35"
+    },
+    {
+    "id":11,
+    "food":"Ei",
+    "calories":10.00000000,
+    "carbs":"",
+    "protein":"",
+    "fat":"",
+    "refdate":"2021-04-28 17:07:18"
+    }
+]
