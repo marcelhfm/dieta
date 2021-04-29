@@ -1,8 +1,8 @@
 import functools
-
 from flask import (Blueprint, flash, g, redirect, render_template, request, session, url_for)
-
 from werkzeug.security import check_password_hash, generate_password_hash
+from flaskr.dietDB import Database 
+
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -11,7 +11,9 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        #MISSING: safe db into variable (get_db) method
+        
+        #Initialize connection to database
+        db = Database()
         
         
         if not username:
@@ -22,7 +24,7 @@ def register():
         
         
         if error is None:
-            #MISSINg: Create new db entry containing username and password
+            #MISSING: Create new db entry containing username and password
             return redirect(url_for('auth.login'))
         
         flash(error)
