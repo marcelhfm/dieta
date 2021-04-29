@@ -154,7 +154,7 @@ def calculate():
         weekly_df = weekly_df.round({"loss": 4, "deficit": 0, "weight": 2})
         macro_df = macro_df.round(0)
         
-        #MISSING: safe df into db (with correct user)
+        #MISSING: safe dfs into db (with correct user)
         #return weekly_df, daily_df, macro_df
         
         #redirect to site showing results
