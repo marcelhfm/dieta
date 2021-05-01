@@ -2,7 +2,7 @@ import functools
 from flask import (Blueprint, flash, g, redirect, render_template, request, session, url_for)
 from werkzeug.security import check_password_hash, generate_password_hash
 from flaskr.dietDB import Database 
-
+import loadConfig
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -11,9 +11,11 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        error = None
         
         #Initialize connection to database
-        db = Database()
+        config = loadConfig.Config('diet.json')
+        db = Database(config)
         
         
         if not username:
@@ -24,7 +26,11 @@ def register():
         
         
         if error is None:
-            #MISSING: Create new db entry containing username and password
+            data = {
+                "username": username,
+                "password": password
+            }
+            db.insertUser(data)
             return redirect(url_for('auth.login'))
         
         flash(error)
