@@ -34,6 +34,10 @@ class Database():
                    "  `id` int(11) NOT NULL AUTO_INCREMENT, "
                    "  `username` varchar(50) NOT NULL, "
                    "  `password` varchar(200) NOT NULL, "
+                   "  `calories` decimal(14, 8) DEFAULT NULL, "
+                   "  `protein` decimal(14, 8) DEFAULT NULL, "
+                   "  `carbs` decimal(14, 8) DEFAULT NULL, "
+                   "  `fats` decimal(14, 8) DEFAULT NULL, "
                    "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
                    "  PRIMARY KEY (`id`) "
                    ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
@@ -94,6 +98,7 @@ class Database():
             # refdate is updated automatically with each insert or update
             sql = ("CREATE TABLE IF NOT EXISTS `joule`.`weekly` ( "
                    "  `id` int(11) NOT NULL AUTO_INCREMENT, "
+                   "  `refUserID` int(11) NOT NULL, "
                    "  `loss` decimal(14, 8) DEFAULT NULL, "
                    "  `deficit` decimal(14, 8) DEFAULT NULL, "
                    "  `weight` decimal(14, 8) DEFAULT NULL,"
@@ -107,72 +112,7 @@ class Database():
             self.logger.critical("Could not create table weekly! " + str(ex))
             return False
         
-        #daily
-        try:
-            self.cursor = self.conn.cursor()
-            sql = "DROP TABLE IF EXISTS `joule`.`daily`"
-            self.logger.debug("SQL=" + sql)
-            self.cursor.execute(sql)
-            self.conn.commit()
-        except Exception as ex:
-            self.logger.critical(
-                "Could not drop daily table for recreation! " + str(ex))
-            return False
-
-        try:
-            # id is incremented automatically
-            # user and food is mandatory - must not be NULL
-            # refdate is updated automatically with each insert or update
-            sql = ("CREATE TABLE IF NOT EXISTS `joule`.`daily` ( "
-                   "  `id` int(11) NOT NULL AUTO_INCREMENT, "
-                   "  `deficit` decimal(14, 8) DEFAULT NULL, "
-                   "  `calories` decimal(14, 8) DEFAULT NULL, "
-                   "  `protein` decimal(14, 8) DEFAULT NULL, "
-                   "  `fats` decimal(14, 8) DEFAULT NULL, "
-                   "  `carbs` decimal(14, 8) DEFAULT NULL, "
-                   "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
-                   "  PRIMARY KEY (`id`) "
-                   ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
-            self.logger.debug("SQL=" + sql)
-            self.cursor.execute(sql)
-            self.conn.commit()
-        except Exception as ex:
-            self.logger.critical("Could not create table daily! " + str(ex))
-            return False
-        
-        #macro
-        try:
-            self.cursor = self.conn.cursor()
-            sql = "DROP TABLE IF EXISTS `joule`.`macro`"
-            self.logger.debug("SQL=" + sql)
-            self.cursor.execute(sql)
-            self.conn.commit()
-        except Exception as ex:
-            self.logger.critical(
-                "Could not drop macro table for recreation! " + str(ex))
-            return False
-
-        try:
-            # id is incremented automatically
-            # user and food is mandatory - must not be NULL
-            # refdate is updated automatically with each insert or update
-            sql = ("CREATE TABLE IF NOT EXISTS `joule`.`macro` ( "
-                   "  `id` int(11) NOT NULL AUTO_INCREMENT, "
-                   "  `calories` decimal(14, 8) DEFAULT NULL, "
-                   "  `protein` decimal(14, 8) DEFAULT NULL, "
-                   "  `carbs` decimal(14, 8) DEFAULT NULL, "
-                   "  `fats` decimal(14, 8) DEFAULT NULL, "
-                   "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
-                   "  PRIMARY KEY (`id`) "
-                   ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
-            self.logger.debug("SQL=" + sql)
-            self.cursor.execute(sql)
-            self.conn.commit()
-        except Exception as ex:
-            self.logger.critical("Could not create table macro! " + str(ex))
-            return False
-
-
+       
     # Initialize DB connection
     def __init__(self, config):
         self.logger = logging.getLogger('diet.dietDB')
