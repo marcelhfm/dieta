@@ -347,3 +347,32 @@ class Database():
             return -1
 
         return result
+    
+    def getUserViaID(self, selectid):
+        """Get username of the specified user via id
+
+        Args:
+            selectid (String): Search string
+
+        Returns:
+            user username
+        """
+        self.logger.debug("user: " + selectid)
+
+        sql = ("SELECT * FROM user WHERE `id` like " + selectid)
+
+        self.logger.debug("SQL=" + sql)
+
+        try:
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(sql)
+
+            result = self.cursor.fetchall()
+            self.logger.debug("Database select completed...")
+
+        except Exception as ex:
+            self.logger.critical(
+                "Could not select data from database table: " + str(ex))
+            return -1
+
+        return result
