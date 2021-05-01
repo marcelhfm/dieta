@@ -197,17 +197,19 @@ class Database():
         self.logger.debug("food: " + selectfood)
 
         if (selectfood == "%"):
-            sql= ("select * from food")
+            sql = 'select * from food'
+            self.logger.debug("SQL=" + sql)
             #sql= ('SELECT JSON_ARRAYAGG(JSON_OBJECT("id", `id`, "food", `food`, "calories", `calories`, "carbs", `carbs`, "protein", `protein`, "fat, `fat`, "refdate", `refdate`)) FROM food')
         else:
-            m = re.search('[^a-zäöüßA-ZÄÖÜ%-]', selectfood)
-            if (m.group(0) != ""):
+            m = re.search('[^a-zA-ZäöüßÄÖÜ%]', selectfood, re.UNICODE)
+            if not (isinstance(m, type(None))):
+                print("m is not type none: " + m.group(0))
                 self.logger.critical("%s contains illeagal characters which makes select statement tainted!" % selectfood)
                 return json.loads('{"Result": "invalid search string: %s"}' % selectfood)
-            else:
-                sql= ("select * from food where `food` like " + selectfood)
-
-        self.logger.debug("SQL=" + sql)
+            
+            sql= ("select * from food where `food` like '" + selectfood + "'")
+        
+        self.logger.info("SQL=" + sql)
 
         try:
             self.cursor=self.conn.cursor()
