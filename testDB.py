@@ -14,6 +14,9 @@ import datetime
 import platform
 import getopt
 
+from flask import Flask, render_template
+from flask_socketio import SocketIO
+
 from flaskr.dietDB import Database
 
 version = "1.0.1"
@@ -162,21 +165,23 @@ def main():
     # print json
     print("[")
     for obj in jsonObject:
-        print("{")
+        print("  {")
         for key in obj:
             value = obj[key]
             if (key == "food" or key == "refdate"):
-                print("\"{}\":\"{}\"".format(key, value) + ",")
+                print("    \"{}\":\"{}\"".format(key, value) + ",")
             else:
                 if (value == None):
-                    print("\"{}\":\"\"".format(key) + ",")
+                    print("    \"{}\":\"\"".format(key) + ",")
                 else:
-                    print("\"{}\":{}".format(key, value) + ",")
-        print("},")
+                    print("    \"{}\":{}".format(key, value) + ",")
+        print("  },")
     print("],")
         
     
     dbConnect.closeConnection()
+
+    
 
 
 def usage():

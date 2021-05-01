@@ -41,7 +41,7 @@ class Database():
             self.cursor.execute(sql)
             self.conn.commit()
         except Exception as ex:
-            self.logger.critical("Could not create table diet! " + str(ex))
+            self.logger.critical("Could not create table user! " + str(ex))
             return False
 
         try:
@@ -51,7 +51,7 @@ class Database():
             self.cursor.execute(sql)
             self.conn.commit()
         except Exception as ex:
-            self.logger.critical("Could not drop diet table for recreation! " +  str(ex))
+            self.logger.critical("Could not drop food table for recreation! " +  str(ex))
             return False
 
         try:
@@ -72,7 +72,7 @@ class Database():
             self.cursor.execute(sql)
             self.conn.commit()
         except Exception as ex:
-            self.logger.critical("Could not create table diet! " + str(ex))
+            self.logger.critical("Could not create table food! " + str(ex))
             return False
 
     # Initialize DB connection
@@ -123,7 +123,7 @@ class Database():
         self.logger.debug("JSON data:" + json.dumps(json_data))
             
         sql = ("insert into user (username, password)" + " values ('" +
-               json_data["username"] + "','" +
+               json_data["username"] + "', '" +
                json_data["password"] + "')")
         
         self.logger.debug("SQL" + sql)
