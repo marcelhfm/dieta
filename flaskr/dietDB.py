@@ -293,7 +293,7 @@ class Database():
                     "%s contains illeagal characters which makes select statement tainted!" % selectuser)
                 return json.loads('{"Result": "invalid search string: %s"}' % selectuser)
             else:
-                sql = ("select * from user where `username` like " + selectuser)
+                sql = ("SELECT * FROM user HAVING username = '" + selectuser + "'")
 
         self.logger.debug("SQL=" + sql)
 
