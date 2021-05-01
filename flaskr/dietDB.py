@@ -209,17 +209,15 @@ class Database():
         if (selectfood == "%"):
             sql = 'select * from food'
             self.logger.debug("SQL=" + sql)
-            #sql= ('SELECT JSON_ARRAYAGG(JSON_OBJECT("id", `id`, "food", `food`, "calories", `calories`, "carbs", `carbs`, "protein", `protein`, "fat, `fat`, "refdate", `refdate`)) FROM food')
         else:
             m = re.search('[^a-zA-ZäöüßÄÖÜ%]', selectfood, re.UNICODE)
             if not (isinstance(m, type(None))):
-                print("m is not type none: " + m.group(0))
                 self.logger.critical("%s contains illeagal characters which makes select statement tainted!" % selectfood)
                 return json.loads('{"Result": "invalid search string: %s"}' % selectfood)
             
             sql= ("select * from food where `food` like '" + selectfood + "'")
         
-        self.logger.info("SQL=" + sql)
+        self.logger.debug("SQL=" + sql)
 
         try:
             self.cursor=self.conn.cursor()
@@ -249,10 +247,9 @@ class Database():
 
         if (selectuser == "%"):
             sql = ("select * from user")
-            #sql= ('SELECT JSON_ARRAYAGG(JSON_OBJECT("id", `id`, "food", `food`, "calories", `calories`, "carbs", `carbs`, "protein", `protein`, "fat, `fat`, "refdate", `refdate`)) FROM food')
         else:
             m = re.search('[^a-zäöüßA-ZÄÖÜ%-]', selectuser)
-            if (m.group(0) != ""):
+            if not (isinstance(m, type(None))):
                 self.logger.critical(
                     "%s contains illeagal characters which makes select statement tainted!" % selectuser)
                 return json.loads('{"Result": "invalid search string: %s"}' % selectuser)
@@ -270,6 +267,41 @@ class Database():
             #   for i, value in enumerate(row)) for row in self.cursor.fetchall()]
 
             self.logger.debug("Database select completed...")
+        except Exception as ex:
+            self.logger.critical(
+                "Could not select data from database table: " + str(ex))
+            return -1
+
+        return result
+
+    def getUserID(self, selectuser):
+        """Get id of the specified user
+
+        Args:
+            selectuser (String): Search string
+
+        Returns:
+            user id
+        """
+        self.logger.debug("user: " + selectuser)
+
+        m = re.search('[^a-zäöüßA-ZÄÖÜ-]', selectuser)
+        if not (isinstance(m, type(None))):
+            self.logger.critical(
+                "%s contains illeagal characters which makes select statement tainted!" % selectuser)
+            return json.loads('{"Result": "invalid search string: %s"}' % selectuser)
+        else:
+            sql = ("select id from user where `username` like " + selectuser)
+
+        self.logger.debug("SQL=" + sql)
+
+        try:
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(sql)
+
+            result = self.cursor.fetchall()
+            self.logger.debug("Database select completed...")
+
         except Exception as ex:
             self.logger.critical(
                 "Could not select data from database table: " + str(ex))
