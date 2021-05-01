@@ -421,9 +421,17 @@ class Database():
         Returns:
             user json data
         """
+<<<<<<< HEAD
         self.logger.debug("user: " + str(selectid))
 
         sql = ("SELECT * FROM user WHERE `id` = " + str(selectid))
+=======
+        selectid = str(selectid)
+        
+        self.logger.debug("user: " + str(selectid))
+
+        sql = ("SELECT * FROM user WHERE `id` = '" + str(selectid) + "'")
+>>>>>>> 835b92b4278da42e6b6911be7b4262fc4a34736a
 
         self.logger.debug("SQL=" + sql)
 
@@ -458,7 +466,11 @@ class Database():
                 "%s contains illeagal characters which makes select statement tainted!" % selectuser)
             return json.loads('{"Result": "invalid search string: %s"}' % selectuser)
         else:
+<<<<<<< HEAD
             sql = ("select id from user where `username` like '%s'" % selectuser)
+=======
+            sql = ("select id from user where `username` like  '" + selectuser + "'")
+>>>>>>> 835b92b4278da42e6b6911be7b4262fc4a34736a
 
         self.logger.debug("SQL=" + sql)
 
@@ -492,7 +504,7 @@ class Database():
         m = re.search('[^0-9a-zA-ZäöüßÄÖÜ_-]', selectfood)
         if not (isinstance(m, type(None))):
             self.logger.critical(
-                "%s contains illeagal characters which makes select statement tainted!" % selectuser)
+                "%s contains illeagal characters which makes select statement tainted!" % selectfood)
             return json.loads('{"Result": "invalid search string: %s"}' % selectfood)
         else:
             sql = ("select id from food where `food` like '%s'" % selectfood)
