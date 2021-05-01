@@ -17,8 +17,13 @@ def register():
         config = loadConfig.Config('diet.json')
         db = Database(config)
         
-        check_username = db.selectUser(username)
-        
+        check_username = None
+        try:
+            check_id = db.getUserID(username)[0]['id']
+            check_username = db.selectUser(check_id)[0]['username']
+        except:
+            pass
+            
         if not username:
             error = 'Username is required.'
         elif not password:
@@ -51,7 +56,8 @@ def login():
         
         
         #Fetch username from database and safe in variable user 
-        user = db.selectUser(username)
+        user_id = db.getUserID(username)[0]['id']
+        user = db.selectUser(user_id)
         selected_password = user[0]['password']
         if user is None:
             error = 'Incorrect username.'
@@ -83,7 +89,7 @@ def load_logged_in_user():
     if user_id is None:
         g.user = None
     else:
-        tmp = db.getUserViaID(str(user_id))
+        tmp = db.selectUser(user_id)
         g.user = tmp[0]
     
 def login_required(view):
