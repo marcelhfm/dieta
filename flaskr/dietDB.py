@@ -35,11 +35,6 @@ class Database():
                    "  `id` int(11) NOT NULL AUTO_INCREMENT, "
                    "  `username` varchar(50) NOT NULL, "
                    "  `password` varchar(200) NOT NULL, "
-                   "  `currentWeight` decimal(14, 8) DEFAULT NULL,"
-                   "  `calories` decimal(14, 8) DEFAULT NULL, "
-                   "  `protein` decimal(14, 8) DEFAULT NULL, "
-                   "  `carbs` decimal(14, 8) DEFAULT NULL, "
-                   "  `fats` decimal(14, 8) DEFAULT NULL, "
                    "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
                    "  PRIMARY KEY (`id`) "
                    ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
@@ -49,7 +44,43 @@ class Database():
         except Exception as ex:
             self.logger.critical("Could not create table user! " + str(ex))
             return False
-        
+
+        #target
+        try:
+            self.cursor = self.conn.cursor()
+            sql = "DROP TABLE IF EXISTS `joule`.`target`"
+            self.logger.debug("SQL=" + sql)
+            self.cursor.execute(sql)
+            self.conn.commit()
+        except Exception as ex:
+            self.logger.critical(
+                "Could not drop target table for recreation! " + str(ex))
+            return False
+
+        try:
+            # id is incremented automatically
+            # user and food is mandatory - must not be NULL
+            # refdate is updated automatically with each insert or update
+            sql = ("CREATE TABLE IF NOT EXISTS `joule`.`target` ( "
+                   "  `id` int(11) NOT NULL AUTO_INCREMENT, "
+                   "  `refUserID` int(11) NOT NULL, "
+                   "  `week` int DEFAULT NULL, "
+                   "  `period` int DEFAULT NULL, "
+                   "  `targetWeight` decimal(14, 8) DEFAULT NULL,"
+                   "  `calories` decimal(14, 8) DEFAULT NULL, "
+                   "  `protein` decimal(14, 8) DEFAULT NULL, "
+                   "  `carbs` decimal(14, 8) DEFAULT NULL, "
+                   "  `fats` decimal(14, 8) DEFAULT NULL, "
+                   "  PRIMARY KEY (`id`), "
+                   "  FOREIGN KEY (refUserID) REFERENCES user(id) "
+                   ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
+            self.logger.debug("SQL=" + sql)
+            self.cursor.execute(sql)
+            self.conn.commit()
+        except Exception as ex:
+            self.logger.critical("Could not create table user! " + str(ex))
+            return False
+
         #food db
         try:
             self.cursor=self.conn.cursor()
@@ -82,39 +113,42 @@ class Database():
             self.logger.critical("Could not create table food! " + str(ex))
             return False
         
-        #weekly
+       
+        #daily
         try:
             self.cursor = self.conn.cursor()
-            sql = "DROP TABLE IF EXISTS `joule`.`weekly`"
+            sql = "DROP TABLE IF EXISTS `joule`.`daily`"
             self.logger.debug("SQL=" + sql)
             self.cursor.execute(sql)
             self.conn.commit()
         except Exception as ex:
             self.logger.critical(
-                "Could not drop weekly table for recreation! " + str(ex))
+                "Could not drop daily table for recreation! " + str(ex))
             return False
 
         try:
             # id is incremented automatically
             # user and food is mandatory - must not be NULL
             # refdate is updated automatically with each insert or update
-            sql = ("CREATE TABLE IF NOT EXISTS `joule`.`weekly` ( "
+            sql = ("CREATE TABLE IF NOT EXISTS `joule`.`daily` ( "
                    "  `id` int(11) NOT NULL AUTO_INCREMENT, "
                    "  `refUserID` int(11) NOT NULL, "
-                   "  `loss` decimal(14, 8) DEFAULT NULL, "
-                   "  `deficit` decimal(14, 8) DEFAULT NULL, "
-                   "  `weight` decimal(14, 8) DEFAULT NULL,"
+                   "  `refFoodID` int(11) NOT NULL, "
+                   "  `currentWeight` decimal(14, 8) DEFAULT NULL,"
+                   "  `amount` decimal(14, 8) DEFAULT NULL, "
                    "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
-                   "  PRIMARY KEY (`id`) "
+                   "  PRIMARY KEY (`id`), "
+                   "  FOREIGN KEY (refUserID) REFERENCES user(id), "
+                   "  FOREIGN KEY (refFoodID) REFERENCES food(id) "
                    ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
             self.logger.debug("SQL=" + sql)
             self.cursor.execute(sql)
             self.conn.commit()
         except Exception as ex:
             self.logger.critical("Could not create table weekly! " + str(ex))
-            return False
-        
-       
+            return False      
+
+
     # Initialize DB connection
     def __init__(self, config):
         self.logger = logging.getLogger('diet.dietDB')
@@ -163,7 +197,12 @@ class Database():
         self.logger.debug("JSON data:" + json.dumps(json_data))
         
         password = generate_password_hash(json_data["password"])
-            
+
+        m = re.search('[^0-9a-zA-ZäöüßÄÖÜ%-]', json_data["username"], re.UNICODE)
+        if not (isinstance(m, type(None))):
+            self.logger.critical("%s contains illeagal characters which makes select statement tainted!" % json_data["username"])
+            return json.loads('{"Result": "invalid search string: %s"}' % json_data["username"])
+        
         sql = ("insert into user (username, password)" + " values ('" +
                json_data["username"] + "', '" +
                password + "')")
@@ -190,7 +229,6 @@ class Database():
         self.logger.info("Dataset successfully committed to database!")
         return self.cursor.lastrowid
         
-
     # Insert a new dataset (json record) into database
     # Return the last row id after insert completion
     def insertFood(self, json_data):
@@ -198,31 +236,35 @@ class Database():
         if not "calories" in json_data:
             json_data["calories"]= "NULL"
             self.logger.error("Insert data: No calories given!")
-        if not isnumeric(json_data["calories"])
-            self.logger.error("calories is not numeric! : " + str(json_data["calories"]))
-            return json.loads('{"Result": "calories is not numeric: %s"}' % json_data["calories"])
+        else:
+            if not isinstance(json_data["calories"], int):
+                self.logger.error("calories is not numeric! : " + str(json_data["calories"]))
+                return json.loads('{"Result": "calories is not numeric: %s"}' % json_data["calories"])
         if not "carbs" in json_data:
             json_data["carbs"]= "NULL"
-        if not isnumeric(json_data["carbs"])
-            self.logger.error("carbs is not numeric! : " + str(json_data["carbs"]))
-            return json.loads('{"Result": "carbs is not numeric: %s"}' % json_data["carbs"])
+        else:
+            if not isinstance(json_data["carbs"], int):
+                self.logger.error("carbs is not numeric! : " + str(json_data["carbs"]))
+                return json.loads('{"Result": "carbs is not numeric: %s"}' % json_data["carbs"])
         if not "protein" in json_data:
             json_data["protein"]= "NULL"
-        if not isnumeric(json_data["protein"])
-            self.logger.error("protein is not numeric! : " + str(json_data["protein"]))
-            return json.loads('{"Result": "protein is not numeric: %s"}' % json_data["protein"])
+        else:
+            if not isinstance(json_data["protein"], int):
+                self.logger.error("protein is not numeric! : " + str(json_data["protein"]))
+                return json.loads('{"Result": "protein is not numeric: %s"}' % json_data["protein"])
         if not "fat" in json_data:
             json_data["fat"]= "NULL"
-        if not isnumeric(json_data["fat"])
-            self.logger.error("fat is not numeric! : " + str(json_data["fat"]))
-            return json.loads('{"Result": "fat is not numeric: %s"}' % json_data["fat"])
+        else:
+            if not isinstance(json_data["fat"], int):
+                self.logger.error("fat is not numeric! : " + str(json_data["fat"]))
+                return json.loads('{"Result": "fat is not numeric: %s"}' % json_data["fat"])
         
         sql= ("insert into food (food, calories, carbs, protein, fat)" + " values ('" +
-            json_data["food"] + "'," +
-            json_data["calories"] + "," +
-            json_data["carbs"] + "," +
-            json_data["protein"] + "," +
-            json_data["fat"] + ")")
+            str(json_data["food"]) + "'," +
+            str(json_data["calories"]) + "," +
+            str(json_data["carbs"]) + "," +
+            str(json_data["protein"]) + "," +
+            str(json_data["fat"]) + ")")
 
         re.sub(r'"NULL"', 'NULL', sql, re.IGNORECASE)
         self.logger.debug("SQL=" + sql)
@@ -245,7 +287,6 @@ class Database():
 
         self.logger.info("Dataset successfully committed to database!")
         return self.cursor.lastrowid
-
 
     # Insert a new dataset (json record) into database
     # Return the last row id after insert completion
@@ -293,7 +334,6 @@ class Database():
         self.logger.info("Dataset successfully committed to database!")
         return self.cursor.lastrowid
 
-
     def selectFood(self, selectfood):
         """Select all food records matching selectfood and return json record
 
@@ -333,27 +373,18 @@ class Database():
 
         return result
     
-    def selectUser(self, selectuser):
-        """Select a new dataset based on user and return json record
+    def selectUser(self, selectid):
+        """Get user data of the specified user via id
 
         Args:
-            selectuser (String): Search string
+            selectid (String): Search string
 
         Returns:
-            json: json record
+            user json data
         """
-        self.logger.debug("user: " + selectuser)
+        self.logger.debug("user: " + selectid)
 
-        if (selectuser == "%"):
-            sql = ("select * from user")
-        else:
-            m = re.search('[^a-zäöüßA-ZÄÖÜ%-]', selectuser)
-            if not (isinstance(m, type(None))):
-                self.logger.critical(
-                    "%s contains illeagal characters which makes select statement tainted!" % selectuser)
-                return json.loads('{"Result": "invalid search string: %s"}' % selectuser)
-            else:
-                sql = ("SELECT * FROM user HAVING username = '" + selectuser + "'")
+        sql = ("SELECT * FROM user WHERE `id` = " + selectid)
 
         self.logger.debug("SQL=" + sql)
 
@@ -362,13 +393,11 @@ class Database():
             self.cursor.execute(sql)
 
             result = self.cursor.fetchall()
-            #result = [dict((self.cursor.description[i][0], value) \
-            #   for i, value in enumerate(row)) for row in self.cursor.fetchall()]
+            self.logger.debug("Database update completed...")
 
-            self.logger.debug("Database select completed...")
         except Exception as ex:
             self.logger.critical(
-                "Could not select data from database table: " + str(ex))
+                "Could not update data in database table: " + str(ex))
             return -1
 
         return result
@@ -384,7 +413,7 @@ class Database():
         """
         self.logger.debug("user: " + selectuser)
 
-        m = re.search('[^a-zäöüßA-ZÄÖÜ-]', selectuser)
+        m = re.search('[^0-9a-zA-ZäöüßÄÖÜ-]', selectuser)
         if not (isinstance(m, type(None))):
             self.logger.critical(
                 "%s contains illeagal characters which makes select statement tainted!" % selectuser)
@@ -407,8 +436,6 @@ class Database():
             return -1
 
         return result
-<<<<<<< HEAD
-
 
     def updateUserWeight(self, userID, weight):
         """Update weight for the specified userID
@@ -423,35 +450,18 @@ class Database():
         self.logger.debug("user: " + userID + " weight: " + str(weight))
 
         
-        if not (isnumeric(weight)):
+        if not isinstance(weight, int):
             self.logger.critical(
                 "weight is not numeric:" + str(weight))
-            return json.loads('{"Result": "invalid weight value: %s"}' % str(weight)
-        else:
-            sql = ("update `user` set `currentWeight` = %f where `id` = '%s'" % (weight, userID))
-=======
-    
-    def getUserViaID(self, selectid):
-        """Get username of the specified user via id
-
-        Args:
-            selectid (String): Search string
-
-        Returns:
-            user username
-        """
-        self.logger.debug("user: " + selectid)
-
-        sql = ("SELECT * FROM user WHERE `id` like " + selectid)
->>>>>>> f76a8505072250e856ac53b07328db4ebe6c24ac
-
+            return json.loads('{"Result": "invalid weight value: %s"}' % str(weight))
+        
+        sql = ("update `user` set `currentWeight` = %f where `id` = %s" % (weight, userID))  
+        
         self.logger.debug("SQL=" + sql)
 
         try:
             self.cursor = self.conn.cursor()
             self.cursor.execute(sql)
-
-            result = self.cursor.fetchall()
             self.logger.debug("Database update completed...")
 
         except Exception as ex:
@@ -461,40 +471,37 @@ class Database():
 
         return 1
 
-
     def updateMacroData(self, userID, json_data):
-            """Update macro data for the specified user
+        """Update macro data for the specified user
 
-            Args:
-                userID (String): Search string
-                json_data (dict): "calories":float, "protein":float, ...
+        Args:
+            userID (String): Search string
+            json_data (dict): "calories":float, "protein":float, ...
 
-            Returns:
-                1 for success
-            """
-            self.logger.debug("user: " + userID + " data: " + str(json_data))
+        Returns:
+            1 for success
+        """
+        self.logger.debug("user: " + userID + " data: " + str(json_data))
 
-            sql = "update `user` set"
-            for key in json_data:
-                value = json_data[key]
-                if (isnumeric(value)):
-                    sql += " `%s` = %f," % (key, value)
-                else:
-                    return json.loads('{"Result": "value not numeric: %s"}' % str(value))
-            sql = sql[:-1] + " where `user` like '%s'" % selectuser     # remove last ",", then add where-clause
+        sql = "update `user` set"
+        for key in json_data:
+            value = json_data[key]
+            if isinstance(value, int):
+                sql += " `%s` = %f," % (key, value)
+            else:
+                return json.loads('{"Result": "value not numeric: %s"}' % str(value))
+        sql = sql[:-1] + " where `user` like %s" % userID     # remove last ",", then add where-clause
 
-            self.logger.debug("SQL=" + sql)
+        self.logger.debug("SQL=" + sql)
 
-            try:
-                self.cursor = self.conn.cursor()
-                self.cursor.execute(sql)
+        try:
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(sql)
+            self.logger.debug("Database update completed...")
 
-                result = self.cursor.fetchall()
-                self.logger.debug("Database update completed...")
+        except Exception as ex:
+            self.logger.critical(
+                "Could not update data in database table: " + str(ex))
+            return -1
 
-            except Exception as ex:
-                self.logger.critical(
-                    "Could not update data in database table: " + str(ex))
-                return -1
-
-            return 1
+        return 1

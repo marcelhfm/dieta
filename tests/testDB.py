@@ -109,7 +109,7 @@ def main():
 
 
     dbConnect = Database(config)
-    if(False):
+    if(True):
         dbConnect.initDB()
         testrecord = json.loads('{"food": "Birne", "calories": 10}')
         dbConnect.insertFood(testrecord)
