@@ -353,7 +353,7 @@ class Database():
                     "%s contains illeagal characters which makes select statement tainted!" % selectuser)
                 return json.loads('{"Result": "invalid search string: %s"}' % selectuser)
             else:
-                sql = ("select * from user where `username` like " + selectuser)
+                sql = ("SELECT * FROM user HAVING username = '" + selectuser + "'")
 
         self.logger.debug("SQL=" + sql)
 
@@ -407,6 +407,7 @@ class Database():
             return -1
 
         return result
+<<<<<<< HEAD
 
 
     def updateUserWeight(self, userID, weight):
@@ -428,6 +429,21 @@ class Database():
             return json.loads('{"Result": "invalid weight value: %s"}' % str(weight)
         else:
             sql = ("update `user` set `currentWeight` = %f where `id` = '%s'" % (weight, userID))
+=======
+    
+    def getUserViaID(self, selectid):
+        """Get username of the specified user via id
+
+        Args:
+            selectid (String): Search string
+
+        Returns:
+            user username
+        """
+        self.logger.debug("user: " + selectid)
+
+        sql = ("SELECT * FROM user WHERE `id` like " + selectid)
+>>>>>>> f76a8505072250e856ac53b07328db4ebe6c24ac
 
         self.logger.debug("SQL=" + sql)
 
