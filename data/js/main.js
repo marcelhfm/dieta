@@ -13,7 +13,7 @@ const searchFood = async searchText => {
         return state.food.match(regex);
     });
 
-    if (searchText.length === 0) {
+    if (searchText.length === 0 || matches.length === 0) {
         matches = [];
         matchList.innerHTML = '';
     }
