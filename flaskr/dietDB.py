@@ -35,6 +35,7 @@ class Database():
                    "  `id` int(11) NOT NULL AUTO_INCREMENT, "
                    "  `username` varchar(50) NOT NULL, "
                    "  `password` varchar(200) NOT NULL, "
+                   "  `currentWeight` decimal(14, 8) DEFAULT NULL,"
                    "  `calories` decimal(14, 8) DEFAULT NULL, "
                    "  `protein` decimal(14, 8) DEFAULT NULL, "
                    "  `carbs` decimal(14, 8) DEFAULT NULL, "
@@ -197,21 +198,80 @@ class Database():
         if not "calories" in json_data:
             json_data["calories"]= "NULL"
             self.logger.error("Insert data: No calories given!")
+        if not isnumeric(json_data["calories"])
+            self.logger.error("calories is not numeric! : " + str(json_data["calories"]))
+            return json.loads('{"Result": "calories is not numeric: %s"}' % json_data["calories"])
         if not "carbs" in json_data:
             json_data["carbs"]= "NULL"
+        if not isnumeric(json_data["carbs"])
+            self.logger.error("carbs is not numeric! : " + str(json_data["carbs"]))
+            return json.loads('{"Result": "carbs is not numeric: %s"}' % json_data["carbs"])
         if not "protein" in json_data:
             json_data["protein"]= "NULL"
+        if not isnumeric(json_data["protein"])
+            self.logger.error("protein is not numeric! : " + str(json_data["protein"]))
+            return json.loads('{"Result": "protein is not numeric: %s"}' % json_data["protein"])
         if not "fat" in json_data:
             json_data["fat"]= "NULL"
-
+        if not isnumeric(json_data["fat"])
+            self.logger.error("fat is not numeric! : " + str(json_data["fat"]))
+            return json.loads('{"Result": "fat is not numeric: %s"}' % json_data["fat"])
+        
         sql= ("insert into food (food, calories, carbs, protein, fat)" + " values ('" +
             json_data["food"] + "'," +
-            str(json_data["calories"]) + "," +
-            str(json_data["carbs"]) + "," +
-            str(json_data["protein"]) + "," +
-            str(json_data["fat"]) + ")")
+            json_data["calories"] + "," +
+            json_data["carbs"] + "," +
+            json_data["protein"] + "," +
+            json_data["fat"] + ")")
 
-        re.sub(r'"NULL"', 'NULL', sql)
+        re.sub(r'"NULL"', 'NULL', sql, re.IGNORECASE)
+        self.logger.debug("SQL=" + sql)
+        print("SQL=" + sql)
+
+        try:
+            self.cursor=self.conn.cursor()
+            self.cursor.execute(sql)
+            self.logger.debug("Database insert completed...")
+        except Exception as ex:
+            self.logger.critical("Could not insert data into database table: " + str(ex))
+            return -1
+
+        try:
+            self.conn.commit()
+            self.logger.debug("Database insert committed...")
+        except Exception as ex:
+            self.logger.critical("Could not commit last insert: " + str(ex))
+            return -1
+
+        self.logger.info("Dataset successfully committed to database!")
+        return self.cursor.lastrowid
+
+
+    # Insert a new dataset (json record) into database
+    # Return the last row id after insert completion
+    def insertWeekly(self, userID, json_data):
+        self.logger.debug("JSON data: " + json.dumps(json_data))
+        if not "loss" in json_data:
+            json_data["loss"]= "NULL"
+            self.logger.error("Insert data: No loss given!")
+        if not "deficit" in json_data:
+            json_data["deficit"]= "NULL"
+            self.logger.error("Insert data: No deficit given!")
+        if not "protein" in json_data:
+            json_data["protein"]= "NULL"
+            self.logger.error("Insert data: No protein given!")
+        if not "fat" in json_data:
+            json_data["fat"]= "NULL"
+            self.logger.error("Insert data: No fat given!")
+
+        sql= ("insert into weekly (refUserID, loss, deficit, protein, fat)" + " values ('" +
+            userID + "'," +
+            json_data["calories"] + "," +
+            json_data["carbs"] + "," +
+            json_data["protein"] + "," +
+            json_data["fat"] + ")")
+
+        re.sub(r'"NULL"', 'NULL', sql, re.IGNORECASE)
         self.logger.debug("SQL=" + sql)
         print("SQL=" + sql)
 
@@ -235,7 +295,7 @@ class Database():
 
 
     def selectFood(self, selectfood):
-        """Select a new dataset based on user and food and return json record
+        """Select all food records matching selectfood and return json record
 
         Args:
             selectfood (String): Search string
@@ -347,3 +407,78 @@ class Database():
             return -1
 
         return result
+
+
+    def updateUserWeight(self, userID, weight):
+        """Update weight for the specified userID
+
+        Args:
+            userID (String): Search string
+            weight (float): Value to be updated
+
+        Returns:
+            1 for success
+        """
+        self.logger.debug("user: " + userID + " weight: " + str(weight))
+
+        
+        if not (isnumeric(weight)):
+            self.logger.critical(
+                "weight is not numeric:" + str(weight))
+            return json.loads('{"Result": "invalid weight value: %s"}' % str(weight)
+        else:
+            sql = ("update `user` set `currentWeight` = %f where `id` = '%s'" % (weight, userID))
+
+        self.logger.debug("SQL=" + sql)
+
+        try:
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(sql)
+
+            result = self.cursor.fetchall()
+            self.logger.debug("Database update completed...")
+
+        except Exception as ex:
+            self.logger.critical(
+                "Could not update data in database table: " + str(ex))
+            return -1
+
+        return 1
+
+
+    def updateMacroData(self, userID, json_data):
+            """Update macro data for the specified user
+
+            Args:
+                userID (String): Search string
+                json_data (dict): "calories":float, "protein":float, ...
+
+            Returns:
+                1 for success
+            """
+            self.logger.debug("user: " + userID + " data: " + str(json_data))
+
+            sql = "update `user` set"
+            for key in json_data:
+                value = json_data[key]
+                if (isnumeric(value)):
+                    sql += " `%s` = %f," % (key, value)
+                else:
+                    return json.loads('{"Result": "value not numeric: %s"}' % str(value))
+            sql = sql[:-1] + " where `user` like '%s'" % selectuser     # remove last ",", then add where-clause
+
+            self.logger.debug("SQL=" + sql)
+
+            try:
+                self.cursor = self.conn.cursor()
+                self.cursor.execute(sql)
+
+                result = self.cursor.fetchall()
+                self.logger.debug("Database update completed...")
+
+            except Exception as ex:
+                self.logger.critical(
+                    "Could not update data in database table: " + str(ex))
+                return -1
+
+            return 1
