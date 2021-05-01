@@ -109,7 +109,7 @@ def main():
 
 
     dbConnect = Database(config)
-    if(True):
+    if(False):
         dbConnect.initDB()
         testrecord = json.loads('{"food": "Birne", "calories": 10}')
         dbConnect.insertFood(testrecord)
@@ -150,39 +150,87 @@ def main():
 
         testrecord = json.loads('{"username": "Mario", "password": "23r4@~asoiu"}')
         dbConnect.insertUser(testrecord)
-    
+        testrecord = json.loads('{"username": "Mario", "password": "23r4@~asoiu"}')
+        dbConnect.insertUser(testrecord)
+        testrecord = json.loads('{"username": "Mario2", "password": "23r4@~asoiu"}')
+        dbConnect.insertUser(testrecord)
+        testrecord = json.loads('{"username": "Mario-3", "password": "23r4@~asoiu"}')
+        dbConnect.insertUser(testrecord)
+        testrecord = json.loads('{"username": "Johannes", "password": "23r4@~asoiu"}')
+        dbConnect.insertUser(testrecord)
+
 
     print(dbConnect.selectFood('%1'))
     # change the JSON string into a JSON object
     #jsonObject = json.loads(dbConnect.selectFood('%'))
-    jsonObject = dbConnect.selectFood('Birne')
+    jsonObject = dbConnect.selectFood('B%')
 
-    # print the keys and values
-    for obj in jsonObject:
-        id = obj["id"]
-        for key in obj:
-            value = obj[key]
-            if (key != "id"):
-                print("{:3}: {:8} = {}".format(id, key, value))
+    if(False):
+        # print the keys and values
+        for obj in jsonObject:
+            id = obj["id"]
+            for key in obj:
+                value = obj[key]
+                if (key != "id"):
+                    print("{:3}: {:8} = {}".format(id, key, value))
 
-
-    # print json
-    print("[")
-    for obj in jsonObject:
-        print("  {")
-        for key in obj:
-            value = obj[key]
-            if (key == "food" or key == "refdate"):
-                print("    \"{}\":\"{}\"".format(key, value) + ",")
-            else:
-                if (value == None):
-                    print("    \"{}\":\"\"".format(key) + ",")
+    if(False):
+        # print json
+        print("[")
+        for obj in jsonObject:
+            print("  {")
+            for key in obj:
+                value = obj[key]
+                if (key == "food" or key == "refdate"):
+                    print("    \"{}\":\"{}\"".format(key, value) + ",")
                 else:
-                    print("    \"{}\":{}".format(key, value) + ",")
-        print("  },")
-    print("],")
+                    if (value == None):
+                        print("    \"{}\":\"\"".format(key) + ",")
+                    else:
+                        print("    \"{}\":{}".format(key, value) + ",")
+            print("  },")
+        print("],")
         
+    print("get userID for Mario")
+    userID = dbConnect.getUserID('Mario')[0]
+    print(userID)
+    for key in userID:
+        print("key:   " + key)
+        print("value: " + str(userID[key]))
+        userID = userID[key]
+
+    print("get userID for Mario%")
+    print(dbConnect.getUserID('Mario%'))
     
+    print("update user weight")
+    dbConnect.updateUserWeight(userID,81.7)
+    
+    print("get userID for Mario2")
+    userID = dbConnect.getUserID('Mario2')[0]
+    print(userID)
+    for key in userID:
+        print("key:   " + key)
+        print("value: " + str(userID[key]))
+        userID = userID[key]
+    print("update user weight")
+    dbConnect.updateUserWeight(userID,82.7)
+
+    print("get userID for Gandalf")
+    userID = dbConnect.getUserID('Gandalf')[0]
+    print(userID)
+    for key in userID:
+        print("key:   " + key)
+        print("value: " + str(userID[key]))
+        userID = userID[key]
+    print("update user weight")
+    dbConnect.updateUserWeight(userID,83.7)
+
+    print("update macro data (protein, fat, carb)")
+    dbConnect.updateMacroData(userID,{"protein":124,"fat":45,"carb":987})
+
+    print("get all data for user Mario from user table")
+    print(dbConnect.selectUser(userID))
+
     dbConnect.closeConnection()
 
 

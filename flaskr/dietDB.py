@@ -15,7 +15,19 @@ class Database():
     def initDB(self):
         """Init databases - drop and recreate tables
         """
-        #userdb
+        #drop all tables first, set foreign_key_checks = 0 to ignore constraints by foreign keys
+
+        self.logger.info("dropping all tables")
+        try:
+            self.cursor = self.conn.cursor()
+            sql = "SET FOREIGN_KEY_CHECKS = 0"
+            self.logger.debug("SQL=" + sql)
+            self.cursor.execute(sql)
+            self.conn.commit()
+        except Exception as ex:
+            self.logger.critical(
+                "Could not drop daily table for recreation! " + str(ex))
+            self.logger.critical("sql: " + sql)
         try:
             self.cursor = self.conn.cursor()
             sql = "DROP TABLE IF EXISTS `joule`.`user`"
@@ -24,9 +36,51 @@ class Database():
             self.conn.commit()
         except Exception as ex:
             self.logger.critical(
-                "Could not drop user table for recreation! " + str(ex))
-            return False
+                "Could not drop daily table for recreation! " + str(ex))
+            self.logger.critical("sql: " + sql)    
+        try:
+            self.cursor = self.conn.cursor()
+            sql = "DROP TABLE IF EXISTS `joule`.`food`"
+            self.logger.debug("SQL=" + sql)
+            self.cursor.execute(sql)
+            self.conn.commit()
+        except Exception as ex:
+            self.logger.critical(
+                "Could not drop daily table for recreation! " + str(ex))
+            self.logger.critical("sql: " + sql)
+        try:
+            self.cursor = self.conn.cursor()
+            sql = "DROP TABLE IF EXISTS `joule`.`daily`"
+            self.logger.debug("SQL=" + sql)
+            self.cursor.execute(sql)
+            self.conn.commit()
+        except Exception as ex:
+            self.logger.critical(
+                "Could not drop daily table for recreation! " + str(ex))
+            self.logger.critical("sql: " + sql)
+        try:
+            self.cursor = self.conn.cursor()
+            sql = "DROP TABLE IF EXISTS `joule`.`target`"
+            self.logger.debug("SQL=" + sql)
+            self.cursor.execute(sql)
+            self.conn.commit()
+        except Exception as ex:
+            self.logger.critical(
+                "Could not drop daily table for recreation! " + str(ex))
+            self.logger.critical("sql: " + sql)
+        try:
+            self.cursor = self.conn.cursor()
+            sql = "SET FOREIGN_KEY_CHECKS = 1"
+            self.logger.debug("SQL=" + sql)
+            self.cursor.execute(sql)
+            self.conn.commit()
+        except Exception as ex:
+            self.logger.critical(
+                "Could not drop daily table for recreation! " + str(ex))
+            self.logger.critical("sql: " + sql)
 
+        #user
+        self.logger.info("create table user")
         try:
             # id is incremented automatically
             # user and food is mandatory - must not be NULL
@@ -36,62 +90,19 @@ class Database():
                    "  `username` varchar(50) NOT NULL, "
                    "  `password` varchar(200) NOT NULL, "
                    "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
-                   "  PRIMARY KEY (`id`) "
-                   ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
-            self.logger.debug("SQL=" + sql)
-            self.cursor.execute(sql)
-            self.conn.commit()
-        except Exception as ex:
-            self.logger.critical("Could not create table user! " + str(ex))
-            return False
-
-        #target
-        try:
-            self.cursor = self.conn.cursor()
-            sql = "DROP TABLE IF EXISTS `joule`.`target`"
-            self.logger.debug("SQL=" + sql)
-            self.cursor.execute(sql)
-            self.conn.commit()
-        except Exception as ex:
-            self.logger.critical(
-                "Could not drop target table for recreation! " + str(ex))
-            return False
-
-        try:
-            # id is incremented automatically
-            # user and food is mandatory - must not be NULL
-            # refdate is updated automatically with each insert or update
-            sql = ("CREATE TABLE IF NOT EXISTS `joule`.`target` ( "
-                   "  `id` int(11) NOT NULL AUTO_INCREMENT, "
-                   "  `refUserID` int(11) NOT NULL, "
-                   "  `week` int DEFAULT NULL, "
-                   "  `period` int DEFAULT NULL, "
-                   "  `targetWeight` decimal(14, 8) DEFAULT NULL,"
-                   "  `calories` decimal(14, 8) DEFAULT NULL, "
-                   "  `protein` decimal(14, 8) DEFAULT NULL, "
-                   "  `carbs` decimal(14, 8) DEFAULT NULL, "
-                   "  `fats` decimal(14, 8) DEFAULT NULL, "
                    "  PRIMARY KEY (`id`), "
-                   "  FOREIGN KEY (refUserID) REFERENCES user(id) "
+                   "  CONSTRAINT userconstraint UNIQUE (`username`)"
                    ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
             self.logger.debug("SQL=" + sql)
             self.cursor.execute(sql)
             self.conn.commit()
         except Exception as ex:
             self.logger.critical("Could not create table user! " + str(ex))
+            self.logger.critical("sql: " + sql)
             return False
 
-        #food db
-        try:
-            self.cursor=self.conn.cursor()
-            sql = "DROP TABLE IF EXISTS `joule`.`food`"
-            self.logger.debug("SQL=" + sql)
-            self.cursor.execute(sql)
-            self.conn.commit()
-        except Exception as ex:
-            self.logger.critical("Could not drop food table for recreation! " +  str(ex))
-            return False
-
+        #food
+        self.logger.info("create table food")
         try:
             # id is incremented automatically
             # user and food is mandatory - must not be NULL
@@ -112,20 +123,18 @@ class Database():
         except Exception as ex:
             self.logger.critical("Could not create table food! " + str(ex))
             return False
-        
-       
-        #daily
         try:
-            self.cursor = self.conn.cursor()
-            sql = "DROP TABLE IF EXISTS `joule`.`daily`"
-            self.logger.debug("SQL=" + sql)
+            #insert "__weight__" as default food value for food reference in daily for currentWeight documentation
+            sql = "insert into food (food) values ('__weight__')" 
+            self.logger.debug("Insert default into food table: " + sql)
+            self.cursor=self.conn.cursor()
             self.cursor.execute(sql)
-            self.conn.commit()
+            self.logger.debug("Database insert completed...")
         except Exception as ex:
-            self.logger.critical(
-                "Could not drop daily table for recreation! " + str(ex))
-            return False
+            self.logger.critical("Could not insert data into database table: " + str(ex))
+            return -1
 
+        #daily
         try:
             # id is incremented automatically
             # user and food is mandatory - must not be NULL
@@ -148,6 +157,36 @@ class Database():
             self.logger.critical("Could not create table weekly! " + str(ex))
             return False      
 
+        #target
+        self.logger.info("creating table target")
+        try:
+            # id is incremented automatically
+            # user and food is mandatory - must not be NULL
+            # refdate is updated automatically with each insert or update
+            sql = ("CREATE TABLE IF NOT EXISTS `joule`.`target` ( "
+                   "  `id` int(11) NOT NULL AUTO_INCREMENT, "
+                   "  `refUserID` int(11) NOT NULL, "
+                   "  `week` int DEFAULT NULL, "
+                   "  `period` int DEFAULT NULL, "
+                   "  `targetWeight` decimal(14, 8) DEFAULT NULL,"
+                   "  `calories` decimal(14, 8) DEFAULT NULL, "
+                   "  `protein` decimal(14, 8) DEFAULT NULL, "
+                   "  `carbs` decimal(14, 8) DEFAULT NULL, "
+                   "  `fats` decimal(14, 8) DEFAULT NULL, "
+                   "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
+                   "  PRIMARY KEY (`id`), "
+                   "  FOREIGN KEY (refUserID) REFERENCES user(id) "
+                   ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
+            self.logger.debug("SQL=" + sql)
+            self.cursor.execute(sql)
+            self.conn.commit()
+        except Exception as ex:
+            self.logger.critical("Could not create table user! " + str(ex))
+            return False
+
+
+        
+       
 
     # Initialize DB connection
     def __init__(self, config):
@@ -382,9 +421,9 @@ class Database():
         Returns:
             user json data
         """
-        self.logger.debug("user: " + selectid)
+        self.logger.debug("user: " + str(selectid))
 
-        sql = ("SELECT * FROM user WHERE `id` = " + selectid)
+        sql = ("SELECT * FROM user WHERE `id` = " + str(selectid))
 
         self.logger.debug("SQL=" + sql)
 
@@ -419,7 +458,7 @@ class Database():
                 "%s contains illeagal characters which makes select statement tainted!" % selectuser)
             return json.loads('{"Result": "invalid search string: %s"}' % selectuser)
         else:
-            sql = ("select id from user where `username` like " + selectuser)
+            sql = ("select id from user where `username` like '%s'" % selectuser)
 
         self.logger.debug("SQL=" + sql)
 
@@ -433,6 +472,45 @@ class Database():
         except Exception as ex:
             self.logger.critical(
                 "Could not select data from database table: " + str(ex))
+            self.logger.critical(
+                "sql: " + sql)
+            return -1
+
+        return result
+
+    def getFoodID(self, selectfood):
+        """Get id of the specified food
+
+        Args:
+            selectfood (String): Search string
+
+        Returns:
+            food id
+        """
+        self.logger.debug("user: " + selectfood)
+
+        m = re.search('[^0-9a-zA-ZäöüßÄÖÜ_-]', selectfood)
+        if not (isinstance(m, type(None))):
+            self.logger.critical(
+                "%s contains illeagal characters which makes select statement tainted!" % selectuser)
+            return json.loads('{"Result": "invalid search string: %s"}' % selectfood)
+        else:
+            sql = ("select id from food where `food` like '%s'" % selectfood)
+
+        self.logger.debug("SQL=" + sql)
+
+        try:
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(sql)
+
+            result = self.cursor.fetchall()
+            self.logger.debug("Database select completed...")
+
+        except Exception as ex:
+            self.logger.critical(
+                "Could not select data from database table: " + str(ex))
+            self.logger.critical(
+                "sql: " + sql)
             return -1
 
         return result
@@ -447,15 +525,24 @@ class Database():
         Returns:
             1 for success
         """
-        self.logger.debug("user: " + userID + " weight: " + str(weight))
+
+        print(weight)
+        print(userID)
+        self.logger.debug("user: %s weight: %s" % (userID, weight))
 
         
-        if not isinstance(weight, int):
+        if not isinstance(weight, float):
             self.logger.critical(
                 "weight is not numeric:" + str(weight))
             return json.loads('{"Result": "invalid weight value: %s"}' % str(weight))
         
-        sql = ("update `user` set `currentWeight` = %f where `id` = %s" % (weight, userID))  
+        foodID = self.getFoodID('__weight__')[0]
+        for key in foodID:
+            print("key:   " + key)
+            print("value: " + str(foodID[key]))
+            foodID = foodID[key]
+
+        sql = ("insert into `daily` (`refUserID`, `refFoodID`, `currentWeight`) values (%s, %s, %s)" % (userID, foodID, weight))  
         
         self.logger.debug("SQL=" + sql)
 
@@ -471,7 +558,7 @@ class Database():
 
         return 1
 
-    def updateMacroData(self, userID, json_data):
+    def insertTargetData(self, userID, json_data):
         """Update macro data for the specified user
 
         Args:
@@ -481,16 +568,19 @@ class Database():
         Returns:
             1 for success
         """
-        self.logger.debug("user: " + userID + " data: " + str(json_data))
+        self.logger.debug("user: " + str(userID) + " data: " + str(json_data))
 
-        sql = "update `user` set"
+        sql = "insert into `target` (refUserID, "
+        for key in json_data:
+            sql += " `%s`," % key
+        sql = sql[:-1] + ") values (%s" % userID     # remove last ","
         for key in json_data:
             value = json_data[key]
-            if isinstance(value, int):
-                sql += " `%s` = %f," % (key, value)
+            if isinstance(value, (int, float)):
+                sql += " %s, " % value
             else:
-                return json.loads('{"Result": "value not numeric: %s"}' % str(value))
-        sql = sql[:-1] + " where `user` like %s" % userID     # remove last ",", then add where-clause
+                sql += " '%s', " % value
+        sql = sql[:-1] + ") "     # remove last ",", then add where-clause
 
         self.logger.debug("SQL=" + sql)
 
