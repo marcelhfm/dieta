@@ -28,9 +28,9 @@ def test_insert_user():
 
     db.insertUser(json_data=user)
     
-def test_select_user(username):
+def test_select_user(id):
     db = connectDB()
-    user = db.selectUser(username)
+    user = db.selectUser(id)[0]['username']
     print(user)
     
 def test_select_food(name):
@@ -38,14 +38,14 @@ def test_select_food(name):
     food = db.selectFood(name)
     print(food)
     
-def test_getUserViaID(id):
+def test_getUserId(username):
     db = connectDB()
-    user = db.getUserViaID(id)
-    print(user)
+    id = db.getUserID(username)#[0]['id']
+    print(id)
 
 def main():
     print("starting testing...")
-    test_getUserViaID("2")
+    test_getUserId("Test")
     print("finished testing...")
     
 
