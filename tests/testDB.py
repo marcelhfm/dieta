@@ -14,7 +14,10 @@ import datetime
 import platform
 import getopt
 
-import flaskr.dietDB
+from flask import Flask, render_template
+from flask_socketio import SocketIO
+
+from flaskr.dietDB import Database
 
 version = "1.0.1"
 
@@ -25,9 +28,12 @@ logger.setLevel(logging.DEBUG)
 localdir = os.path.dirname(sys.argv[0])
 if (localdir != ''):
     os.chdir(localdir)
+print("localdir={}".format(localdir))
+
+
 
 def main():
-    config = loadConfig.Config("diet.json")
+    config = loadConfig.Config("../diet.json")
     logpath = config.getItem("LOGGERFILE")
     screenlogging = config.getItem("SCREENLOGGING")
     filelogging = config.getItem("FILELOGGING")
@@ -102,21 +108,53 @@ def main():
     logger.debug("Logging is enabled in Module: " + __name__)
 
 
-    dbConnect = flaskr.dietDB.Database(config)
-    #dbConnect.initDB()
-    testrecord = json.loads('{"food": "test1", "calories": 10}')
-    dbConnect.insertData(testrecord)
-    testrecord = json.loads('{"food": "test2", "calories": 100, "fat": 100}')
-    dbConnect.insertData(testrecord)
-    testrecord = json.loads('{"food": "test3", "calories": 1000, "fat": 1000, "carbs": 1000}')
-    dbConnect.insertData(testrecord)
-    testrecord = json.loads('{"food": "test4", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
-    dbConnect.insertData(testrecord)
+    dbConnect = Database(config)
+    dbConnect.initDB()
+    testrecord = json.loads('{"food": "Birne", "calories": 10}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Ei", "calories": 100, "fat": 100}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Brie", "calories": 1000, "fat": 1000, "carbs": 1000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Apfel", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Weizenbrot", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Emmerbrot", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Camenbert", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Banane", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Ananas", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Aprikose", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Apfelmus", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Avocado", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Blaubeere", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Blutorange", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Brombeere", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Datteln", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Feigen", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+    testrecord = json.loads('{"food": "Clementine", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
+    dbConnect.insertFood(testrecord)
+
+    testrecord = json.loads('{"username": "Mario", "password": "23r4@~asoiu"}')
+    dbConnect.insertUser(testrecord)
+    
 
     print(dbConnect.selectData('%1'))
     # change the JSON string into a JSON object
     #jsonObject = json.loads(dbConnect.selectData('%'))
-    jsonObject = dbConnect.selectFood('Birne')
+    jsonObject = dbConnect.selectData('B%')
 
     # print the keys and values
     for obj in jsonObject:
@@ -126,11 +164,27 @@ def main():
             if (key != "id"):
                 print("{:3}: {:8} = {}".format(id, key, value))
 
-    #for obj in jsonObject:
-    #   print("{:3} food:{:5.2} calories:{:5.2} carbs:{:5.2} protein:{:5.2} fat:{:5.2} date:{:%Y-%m-%d %H:%M:%S}".format(obj["id"], obj["food"], obj["calories"], obj["carbs"], obj["protein"], obj["fat"], obj["refdate"]))
 
-
+    # print json
+    print("[")
+    for obj in jsonObject:
+        print("  {")
+        for key in obj:
+            value = obj[key]
+            if (key == "food" or key == "refdate"):
+                print("    \"{}\":\"{}\"".format(key, value) + ",")
+            else:
+                if (value == None):
+                    print("    \"{}\":\"\"".format(key) + ",")
+                else:
+                    print("    \"{}\":{}".format(key, value) + ",")
+        print("  },")
+    print("],")
+        
+    
     dbConnect.closeConnection()
+
+
 
 
 def usage():
