@@ -6,6 +6,7 @@ import json
 import pymysql
 from time import gmtime, strftime
 import re
+from werkzeug.security import generate_password_hash
 # create logger
 module_logger = logging.getLogger('diet.dietDB')
 
@@ -159,10 +160,12 @@ class Database():
             
         """
         self.logger.debug("JSON data:" + json.dumps(json_data))
+        
+        password = generate_password_hash(json_data["password"])
             
         sql = ("insert into user (username, password)" + " values ('" +
                json_data["username"] + "', '" +
-               json_data["password"] + "')")
+               password + "')")
         
         self.logger.debug("SQL" + sql)
         print("SQL" + sql)
