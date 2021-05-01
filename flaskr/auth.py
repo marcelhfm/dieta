@@ -53,12 +53,17 @@ def login():
         config = loadConfig.Config('diet.json')
         db = Database(config)
         error = None
-        
+        user = None
         
         #Fetch username from database and safe in variable user 
-        user_id = db.getUserID(username)[0]['id']
-        user = db.selectUser(user_id)
-        selected_password = user[0]['password']
+        try:
+            user_id = db.getUserID(username)[0]['id']
+            user = db.selectUser(user_id)
+            selected_password = user[0]['password']
+        except:
+            error = "Username does not exist."
+            
+        
         if user is None:
             error = 'Incorrect username.'
         elif not check_password_hash(user[0]['password'], password):
