@@ -152,10 +152,10 @@ def main():
         dbConnect.insertUser(testrecord)
     
 
-    print(dbConnect.selectData('%1'))
+    print(dbConnect.selectFood('%1'))
     # change the JSON string into a JSON object
-    #jsonObject = json.loads(dbConnect.selectData('%'))
-    jsonObject = dbConnect.selectData('B%')
+    #jsonObject = json.loads(dbConnect.selectFood('%'))
+    jsonObject = dbConnect.selectFood('Birne')
 
     # print the keys and values
     for obj in jsonObject:

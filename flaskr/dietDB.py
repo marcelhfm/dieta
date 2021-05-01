@@ -15,6 +15,7 @@ class Database():
     def initDB(self):
         """Init userDB - drop and recreate table
         """
+        #userdb
         try:
             self.cursor = self.conn.cursor()
             sql = "DROP TABLE IF EXISTS `joule`.`user`"
@@ -25,7 +26,7 @@ class Database():
             self.logger.critical(
                 "Could not drop user table for recreation! " + str(ex))
             return False
-        
+
         try:
             # id is incremented automatically
             # user and food is mandatory - must not be NULL
@@ -33,7 +34,7 @@ class Database():
             sql = ("CREATE TABLE IF NOT EXISTS `joule`.`user` ( "
                    "  `id` int(11) NOT NULL AUTO_INCREMENT, "
                    "  `username` varchar(50) NOT NULL, "
-                   "  `password` varchar(50) NOT NULL, "
+                   "  `password` varchar(200) NOT NULL, "
                    "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
                    "  PRIMARY KEY (`id`) "
                    ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
@@ -43,7 +44,8 @@ class Database():
         except Exception as ex:
             self.logger.critical("Could not create table user! " + str(ex))
             return False
-
+        
+        #food db
         try:
             self.cursor=self.conn.cursor()
             sql = "DROP TABLE IF EXISTS `joule`.`food`"
@@ -192,8 +194,16 @@ class Database():
         self.logger.info("Dataset successfully committed to database!")
         return self.cursor.lastrowid
 
-    # Select a new dataset based on user and food and return json record
-    def selectData(self, selectfood):
+
+    def selectFood(self, selectfood):
+        """Select a new dataset based on user and food and return json record
+
+        Args:
+            selectfood (String): Search string
+
+        Returns:
+            json: json record
+        """
         self.logger.debug("food: " + selectfood)
 
         if (selectfood == "%"):
@@ -222,6 +232,47 @@ class Database():
             self.logger.debug("Database select completed...")
         except Exception as ex:
             self.logger.critical("Could not select data from database table: " + str(ex))
+            return -1
+
+        return result
+    
+    def selectUser(self, selectuser):
+        """Select a new dataset based on user and return json record
+
+        Args:
+            selectuser (String): Search string
+
+        Returns:
+            json: json record
+        """
+        self.logger.debug("user: " + selectuser)
+
+        if (selectuser == "%"):
+            sql = ("select * from user")
+            #sql= ('SELECT JSON_ARRAYAGG(JSON_OBJECT("id", `id`, "food", `food`, "calories", `calories`, "carbs", `carbs`, "protein", `protein`, "fat, `fat`, "refdate", `refdate`)) FROM food')
+        else:
+            m = re.search('[^a-zäöüßA-ZÄÖÜ%-]', selectuser)
+            if (m.group(0) != ""):
+                self.logger.critical(
+                    "%s contains illeagal characters which makes select statement tainted!" % selectuser)
+                return json.loads('{"Result": "invalid search string: %s"}' % selectuser)
+            else:
+                sql = ("select * from user where `username` like " + selectuser)
+
+        self.logger.debug("SQL=" + sql)
+
+        try:
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(sql)
+
+            result = self.cursor.fetchall()
+            #result = [dict((self.cursor.description[i][0], value) \
+            #   for i, value in enumerate(row)) for row in self.cursor.fetchall()]
+
+            self.logger.debug("Database select completed...")
+        except Exception as ex:
+            self.logger.critical(
+                "Could not select data from database table: " + str(ex))
             return -1
 
         return result
