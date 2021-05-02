@@ -12,12 +12,17 @@ def register():
         username = request.form['username']
         password = request.form['password']
         error = None
+        check_username = None
         
         #Initialize connection to database
         config = loadConfig.Config('diet.json')
         db = Database(config)
         
-        check_username = db.selectUser(username)
+        try:
+            user_id = db.getUserID(username)[0]["id"]
+            check_username = db.selectUser(user_id)[0]["username"]
+        except:
+            pass
         
         if not username:
             error = 'Username is required.'
@@ -48,11 +53,16 @@ def login():
         config = loadConfig.Config('diet.json')
         db = Database(config)
         error = None
-        
+        user = None
         
         #Fetch username from database and safe in variable user 
-        user = db.selectUser(username)
-        selected_password = user[0]['password']
+        try:
+            user_id = db.getUserID(username)[0]["id"]
+            user = db.selectUser(user_id)
+            selected_password = user[0]['password']
+        except:
+            error = "User with given username does not exist"
+            
         if user is None:
             error = 'Incorrect username.'
         elif not check_password_hash(user[0]['password'], password):
@@ -60,7 +70,7 @@ def login():
             
         if error is None:
             session.clear()
-            session['user_id'] = user[0]['id']
+            session['user_id'] = user_id
             return redirect(url_for('configure.calculate'))
         
         flash(error)
@@ -83,7 +93,7 @@ def load_logged_in_user():
     if user_id is None:
         g.user = None
     else:
-        tmp = db.getUserViaID(str(user_id))
+        tmp = db.selectUser(user_id)
         g.user = tmp[0]
     
 def login_required(view):
