@@ -254,8 +254,6 @@ class Database():
             self.logger.debug("Connection to database established...")
         except Exception as ex:
             self.logger.critical("Could not establish database connection! " + str(ex))
-            exstr = re.sub(r"(['\"])",'=',str(ex))
-            return json.loads('{"Error": "Could not establish database connection! %s"}' % exstr)
         
         self.logger.debug("Database connection established...") 
 
