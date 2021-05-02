@@ -40,7 +40,8 @@ class Database():
             self.logger.critical(
                 "Could not drop daily table for recreation! " + str(ex))
             self.logger.critical("sql: " + sql)
-            return json.loads('{"Error": "setting foreign_key_check failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "setting foreign_key_check failed: %s"}' % exstr)
         try:
             self.cursor = self.conn.cursor()
             sql = "DROP TABLE IF EXISTS `joule`.`user`"
@@ -51,7 +52,8 @@ class Database():
             self.logger.critical(
                 "Could not drop daily table for recreation! " + str(ex))
             self.logger.critical("sql: " + sql)
-            return json.loads('{"Error": "dropping table user failed: %s"}' % str(ex))  
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "dropping table user failed: %s"}' % exstr)  
         try:
             self.cursor = self.conn.cursor()
             sql = "DROP TABLE IF EXISTS `joule`.`food`"
@@ -62,7 +64,8 @@ class Database():
             self.logger.critical(
                 "Could not drop daily table for recreation! " + str(ex))
             self.logger.critical("sql: " + sql)
-            return json.loads('{"Error": "dropping table food failed: %s"}' % str(ex)) 
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "dropping table food failed: %s"}' % exstr) 
         try:
             self.cursor = self.conn.cursor()
             sql = "DROP TABLE IF EXISTS `joule`.`daily`"
@@ -73,7 +76,8 @@ class Database():
             self.logger.critical(
                 "Could not drop daily table for recreation! " + str(ex))
             self.logger.critical("sql: " + sql)
-            return json.loads('{"Error": "dropping table daily failed: %s"}' % str(ex)) 
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "dropping table daily failed: %s"}' % exstr) 
         try:
             self.cursor = self.conn.cursor()
             sql = "DROP TABLE IF EXISTS `joule`.`target`"
@@ -84,7 +88,8 @@ class Database():
             self.logger.critical(
                 "Could not drop daily table for recreation! " + str(ex))
             self.logger.critical("sql: " + sql)
-            return json.loads('{"Error": "dropping table target failed: %s"}' % str(ex)) 
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "dropping table target failed: %s"}' % exstr) 
         try:
             self.cursor = self.conn.cursor()
             sql = "SET FOREIGN_KEY_CHECKS = 1"
@@ -95,7 +100,8 @@ class Database():
             self.logger.critical(
                 "Could not drop daily table for recreation! " + str(ex))
             self.logger.critical("sql: " + sql)
-            return json.loads('{"Error": "setting foreign_key_check failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "setting foreign_key_check failed: %s"}' % exstr)
 
         #user
         self.logger.info("create table user")
@@ -117,7 +123,8 @@ class Database():
         except Exception as ex:
             self.logger.critical("Could not create table user! " + str(ex))
             self.logger.critical("sql: " + sql)
-            return json.loads('{"Error": "creation of user table failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "creation of user table failed: %s"}' % exstr)
 
         #food
         self.logger.info("create table food")
@@ -133,14 +140,16 @@ class Database():
                    "  `protein` decimal(14,8) DEFAULT NULL, "
                    "  `fat` decimal(14,8) DEFAULT NULL, "
                    "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
-                   "  PRIMARY KEY (`id`) "
+                   "  PRIMARY KEY (`id`), "
+                   "  CONSTRAINT foodconstraint UNIQUE (`food`)"
                    ") ENGINE=InnoDB  DEFAULT CHARSET=utf8")
             self.logger.debug("SQL=" + sql)
             self.cursor.execute(sql)
             self.conn.commit()
         except Exception as ex:
             self.logger.critical("Could not create table food! " + str(ex))
-            return json.loads('{"Error": "creation of food table failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "creation of food table failed: %s"}' % exstr)
         try:
             #insert "__weight__" as default food value for food reference in daily for currentWeight documentation
             sql = "insert into food (food) values ('__weight__')" 
@@ -150,7 +159,8 @@ class Database():
             self.logger.debug("Database insert completed...")
         except Exception as ex:
             self.logger.critical("Could not insert data into database table: " + str(ex))
-            return json.loads('{"Error": "insert of default value '__weight__' into table food failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "insert of default value \'__weight__\' into table food failed: %s"}' % exstr)
 
         #daily
         try:
@@ -173,7 +183,8 @@ class Database():
             self.conn.commit()
         except Exception as ex:
             self.logger.critical("Could not create table weekly! " + str(ex))
-            return json.loads('{"Error": "creation of daily table failed: %s"}' % str(ex))    
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "creation of daily table failed: %s"}' % extr(ex))    
 
         #target
         self.logger.info("creating table target")
@@ -200,7 +211,8 @@ class Database():
             self.conn.commit()
         except Exception as ex:
             self.logger.critical("Could not create table user! " + str(ex))
-            return json.loads('{"Error": "creation of target table failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "creation of target table failed: %s"}' % exstr)
        
 ################################################################################
     #
@@ -242,10 +254,10 @@ class Database():
             self.logger.debug("Connection to database established...")
         except Exception as ex:
             self.logger.critical("Could not establish database connection! " + str(ex))
-            return json.loads('{"Error": "Could not establish database connection! %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "Could not establish database connection! %s"}' % exstr)
         
-        self.logger.debug("Database connection established...")
-        return json.loads('{"Success":1}') 
+        self.logger.debug("Database connection established...") 
 
     # Close DB connection
     def closeConnection(self):
@@ -253,12 +265,16 @@ class Database():
             self.cursor.close()
         except Exception as ex:
             self.logger.critical("Could not close cursor! " + str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "Could not close cursor! %s"}' % exstr)
+
 
         try:
             self.conn.close()
         except Exception as ex:
             self.logger.critical("Could not close database connection! " + str(ex))
-            return json.loads('{"Error": "Could not close database connection! %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "Could not close database connection! %s"}' % exstr)
 
         self.logger.debug("Database connection closed...")
         return json.loads('{"Success":"Database connection closed"}') 
@@ -303,18 +319,20 @@ class Database():
         except Exception as ex:
             self.logger.critical(
                 "Could not insert data into database table: " + str(ex))
-            return json.loads('{"Error": "insert failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "insert failed: %s"}' % exstr)
         
         try:
             self.conn.commit()
             self.logger.debug("Database insert committed...")
         except Exception as ex:
             self.logger.critical("Could not commit last insert: " + str(ex))
-            return json.loads('{"Error": "commit failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "commit failed: %s"}' % exstr)
 
         self.logger.info("Dataset successfully committed to database!")
         
-        return json.loads('{"Success":%s' % str(self.cursor.lastrowid))
+        return json.loads('{"Success":%s}' % str(self.cursor.lastrowid))
 
 
     def insertFood(self, json_data):
@@ -386,18 +404,20 @@ class Database():
             self.logger.debug("Database insert completed...")
         except Exception as ex:
             self.logger.critical("Could not insert data into database table: " + str(ex))
-            return json.loads('{"Error": "insert failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "insert failed: %s"}' % exstr)
 
         try:
             self.conn.commit()
             self.logger.debug("Database insert committed...")
         except Exception as ex:
             self.logger.critical("Could not commit last insert: " + str(ex))
-            return json.loads('{"Error": "commit failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "commit failed: %s"}' % exstr)
 
         self.logger.info("Dataset successfully committed to database!")
         
-        return json.loads('{"Success":%s' % str(self.cursor.lastrowid))
+        return json.loads('{"Success":%s}' % str(self.cursor.lastrowid))
 
     
     def insertTargetData(self, userID, json_data):
@@ -419,22 +439,23 @@ class Database():
             Error:      json string ("Error":"Error description")
         """
         self.logger.debug("user: " + str(userID) + " data: " + str(json_data))
+        validKeys = ["week", "period", "targetWeight", "calories", "protein", "carbs", "fats"]
 
         sql = "insert into `target` (refUserID, "
         for key in json_data:
             sql += " `%s`," % key
-        sql = sql[:-1] + ") values (%s" % userID     # remove last ","
+        sql = sql[:-1] + ") values (%s, " % userID     # remove last ","
         for key in json_data:
             value = json_data[key]
-            if key in ("week", "period", "targetWeight", "calories", "protein", "carbs", "fats")
+            if key in validKeys:
                 if isinstance(value, (int, float)):
                     sql += " %s, " % value
                 else:
                     sql += " '%s', " % value
             else:
                 self.logger.error("unknown key: %s value: %s" % (key,value))
-                return json.loads('{"Error":"unknown key: %s value: %s" % (key,value))
-        sql = sql[:-1] + ") "     # remove last ",", then add where-clause
+                return json.loads('{"Error":"unknown key: %s value: %s"}' % (key,value))
+        sql = sql[:-2] + ")"     # remove last ","
 
         re.sub(r'"NULL"', 'NULL', sql, re.IGNORECASE)
         self.logger.debug("SQL=" + sql)
@@ -447,16 +468,18 @@ class Database():
         except Exception as ex:
             self.logger.critical(
                 "Could not update data in database table: " + str(ex))
-            return json.loads('{"Error": "update failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "update failed: %s"}' % exstr)
 
         try:
             self.conn.commit()
             self.logger.debug("Database insert committed...")
         except Exception as ex:
             self.logger.critical("Could not commit last insert: " + str(ex))
-            return json.loads('{"Error": "commit failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "commit failed: %s"}' % exstr)
 
-        return json.loads('{"Success":%s' % str(self.cursor.lastrowid))
+        return json.loads('{"Success":%s}' % str(self.cursor.lastrowid))
 
     def insertDailyData(self, userID, foodID, json_data):
         """Insert daily data for the specified user and food
@@ -482,7 +505,7 @@ class Database():
         sql = "insert into `daily` (refUserID, refFoodID, "
         for key in json_data:
             sql += " `%s`," % key
-        sql = sql[:-1] + ") values (%s" % userID     # remove last ","
+        sql = sql[:-1] + ") values (%s, %s, " % (userID, foodID)     # remove last ","
         for key in json_data:
             value = json_data[key]
             if key == "currentWeight":
@@ -495,8 +518,8 @@ class Database():
                     sql += " '%s', " % value
             else:
                 self.logger.error("unknown key: %s value: %s" % (key,value))
-                return json.loads('{"Error":"unknown key: %s value: %s" % (key,value))
-        sql = sql[:-1] + ") "     # remove last ",", then add where-clause
+                return json.loads('{"Error":"unknown key: %s value: %s"}' % (key,value))
+        sql = sql[:-2] + ") "     # remove last ",", then add where-clause
 
         re.sub(r'"NULL"', 'NULL', sql, re.IGNORECASE)
         self.logger.debug("SQL=" + sql)
@@ -509,16 +532,18 @@ class Database():
         except Exception as ex:
             self.logger.critical(
                 "Could not update data in database table: " + str(ex))
-            return json.loads('{"Error": "update failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "update failed: %s"}' % exstr)
 
         try:
             self.conn.commit()
             self.logger.debug("Database insert committed...")
         except Exception as ex:
             self.logger.critical("Could not commit last insert: " + str(ex))
-            return json.loads('{"Error": "commit failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "commit failed: %s"}' % exstr)
 
-        return json.loads('{"Success":%s' % str(self.cursor.lastrowid))
+        return json.loads('{"Success":%s}' % str(self.cursor.lastrowid))
 
     def insertUserWeight(self, userID, weight):
         """Insert user weight for the specified userID
@@ -560,16 +585,18 @@ class Database():
         except Exception as ex:
             self.logger.critical(
                 "Could not update data in database table: " + str(ex))
-            return json.loads('{"Error": "update failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "update failed: %s"}' % exstr)
 
         try:
             self.conn.commit()
             self.logger.debug("Database insert committed...")
         except Exception as ex:
             self.logger.critical("Could not commit last insert: " + str(ex))
-            return json.loads('{"Error": "commit failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "commit failed: %s"}' % exstr)
 
-        return json.loads('{"Success":%s' % str(self.cursor.lastrowid))
+        return json.loads('{"Success":%s}' % str(self.cursor.lastrowid))
 
 ################################################################################
     #
@@ -613,7 +640,8 @@ class Database():
             self.logger.debug("Database select completed...")
         except Exception as ex:
             self.logger.critical("Could not select data from database table: " + str(ex))
-            return json.loads('{"Error": "select failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "select failed: %s"}' % exstr)
 
         return result
     
@@ -657,11 +685,16 @@ class Database():
                 "Could not select data from database table: " + str(ex))
             self.logger.critical(
                 "sql: " + sql)
-            return json.loads('{"Error": "select failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "select failed: %s"}' % exstr)
 
-        if (result.len() > 1):
-            self.logger.critical("More than one datarow is returned!")
+        if (len(result) > 1):
+            self.logger.critical("More than one data is returned!")
             return json.loads('{"Error": "more than one dataset returned: %s"}' % json.dumps(result))
+
+        if (len(result) == 0):
+            self.logger.critical("No data is returned!")
+            return json.loads('{"Error": "not found: %s"}' % json.dumps(result))
 
         return result
 
@@ -699,9 +732,10 @@ class Database():
                 "Could not select data from database table: " + str(ex))
             self.logger.critical(
                 "sql: " + sql)
-            return json.loads('{"Error": "select failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "select failed: %s"}' % exstr)
         
-        if (result.len() > 1):
+        if (len(result) > 1):
             self.logger.critical("More than one datarow is returned!")
             return json.loads('{"Error": "more than one dataset returned: %s"}' % json.dumps(result))
 
@@ -735,7 +769,8 @@ class Database():
         except Exception as ex:
             self.logger.critical(
                 "Could not select data in database table: " + str(ex))
-            return json.loads('{"Error": "select failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "select failed: %s"}' % exstr)
 
         return result
 
@@ -744,7 +779,7 @@ class Database():
     # Update functions to update one dataset (row) in the database
     # 
 ################################################################################
-    def updateUserWeight(self, userID, weight, date):
+    def updateUserWeight(self, userID, weight, date = 'NULL'):
         """Update weight for the specified userID
 
         Args:
@@ -786,14 +821,16 @@ class Database():
         except Exception as ex:
             self.logger.critical(
                 "Could not update data in database table: " + str(ex))
-            return json.loads('{"Error": "update failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "update failed: %s"}' % exstr)
 
         try:
             self.conn.commit()
             self.logger.debug("Database update committed...")
         except Exception as ex:
             self.logger.critical("Could not commit last update: " + str(ex))
-            return json.loads('{"Error": "commit failed: %s"}' % str(ex))
+            exstr = re.sub(r"(['\"])",'=',str(ex))
+            return json.loads('{"Error": "commit failed: %s"}' % exstr)
 
-        return json.loads('{"Success": 1})
+        return json.loads('{"Success": 1}')
 
