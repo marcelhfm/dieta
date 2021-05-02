@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+<h1>{% block title %}Diet Goals{% endblock %}</h1>
+
+{% block content %}
+<div class="container">
+  <h2 class="display-5">Your goals for this diet</h2>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-sm">
+        <!--TABLE-->
+        <div class="container">
+            <table class="table">
+            <thead>
+                <tr>
+                <th scope="col">Week</th>
+                <th scope="col">Period</th>
+                <th scope="col">Calories</th>
+                <th scope="col">Protein</th>
+                <th scope="col">Carbs</th>
+                <th scope="col">Fats</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                <th scope="row">1</th>
+                <td>Mark</td>
+                <td>Otto</td>
+                <td>@mdo</td>
+                </tr>
+                <tr>
+                <th scope="row">2</th>
+                <td>Jacob</td>
+                <td>Thornton</td>
+                <td>@fat</td>
+                </tr>
+                <tr>
+                <th scope="row">3</th>
+                <td colspan="2">Larry the Bird</td>
+                <td>@twitter</td>
+                </tr>
+            </tbody>
+            </table>
+            </div>
+        </div>
+        
+        <div class="col-sm">
+        <!--WEIGHT DIAGRAM-->
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+{% endblock  %}
