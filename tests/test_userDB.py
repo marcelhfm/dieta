@@ -42,10 +42,25 @@ def test_getUserViaID(id):
     db = connectDB()
     user = db.getUserViaID(id)
     print(user)
+    
+def test_insert_target():
+    user_id = 6
+    data = {
+        "week": '1',
+        "period": '1',
+        "targetweight": '80',
+        "calories": '1500',
+        "protein": '20',
+        "carbs": '30',
+        "fats": '50'
+    }
+    
+    db = connectDB()
+    db.insertTargetData(userID=user_id, json_data=data)
 
 def main():
     print("starting testing...")
-    test_getUserViaID("2")
+    test_insert_target()
     print("finished testing...")
     
 
