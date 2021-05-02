@@ -43,6 +43,9 @@ def test_getUserViaID(id):
     user = db.getUserViaID(id)
     print(user)
     
+def test_test():
+    pass
+    
 def test_insert_target():
     user_id = 6
     data = {
