@@ -18,7 +18,7 @@
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item">
-            <a class="nav-link" href="#">Configure</a>
+            <a class="nav-link" href="{{ url_for('configure.calculate') }}">Configure</a>
           </li>
           {% if  g.user %}
             <li class="nav-item">
