@@ -179,21 +179,27 @@ def test_data_creation(bodyweigt, maintenance):
             data["fats"] = macro_df.loc[x, "fats"]
 
             
-            db.insertTargetData(1, data)
+            db.insertTargetData(113, data)
             
-            
-   
+def test_insert_weight(bodyweigt, maintenance):
+    db = connectDB()
+    weekly_df, daily_df, macro_df = calculate_goals(bodyweigt, maintenance)
+    weight = {}
+    
+    for i in range(9):
+        weight["targetWeight"] = weekly_df.iloc[i, 2]
+        
+        db.insertTargetData(124, weight)
 
 
-
+        
 def test_iteration():
     for i in range(9):
         for j in range(3):
             print(round(1.1 + i + j * 0.1, 1))
     
 def main():
-    test_calculate(80, 2500)
-    test_data_creation(80, 2500)
+    test_insert_weight(80, 2500)
 
 if __name__ == "__main__":
     main()
