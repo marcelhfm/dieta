@@ -245,7 +245,7 @@ class Database():
             return json.loads('{"Error": "Could not establish database connection! %s"}' % str(ex))
         
         self.logger.debug("Database connection established...")
-        return json.loads('{"Success":1}') 
+        #return json.loads('{"Success":1}') 
 
     # Close DB connection
     def closeConnection(self):
