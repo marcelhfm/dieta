@@ -569,7 +569,7 @@ class Database():
             Success:    json records (one)
             Error:      json string ("Error":"Error description")
         """
-        self.logger.debug("user: " + selectfood)
+        self.logger.debug("Food: " + selectfood)
 
         m = re.search('[^0-9a-zA-ZäöüßÄÖÜ_-]', selectfood)
         if not (isinstance(m, type(None))):
