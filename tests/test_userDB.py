@@ -38,14 +38,32 @@ def test_select_food(name):
     food = db.selectFood(name)
     print(food)
     
-def test_getUserViaID(id):
+def test_getUserID(id):
     db = connectDB()
-    user = db.getUserViaID(id)
+    user = db.getUserID(id)
     print(user)
+    
+def test_test():
+    pass
+    
+def test_insert_target():
+    user_id = 6
+    data = {
+        "week": '1',
+        "period": '1',
+        "targetweight": '80',
+        "calories": '1500',
+        "protein": '20',
+        "carbs": '30',
+        "fats": '50'
+    }
+    
+    db = connectDB()
+    db.insertTargetData(userID=user_id, json_data=data)
 
 def main():
     print("starting testing...")
-    test_getUserViaID("2")
+    test_select_user(6)
     print("finished testing...")
     
 
