@@ -111,6 +111,15 @@ def main():
     dbConnect = Database(config)
     if(False):
         dbConnect.initDB()
+
+    import re
+    ex="(1062, \"Duplicate entry 'Mario' for key 'userconstraint'\")"
+    exstr = re.sub(r"(['\"])",'=',ex)
+    print("exstr: %s" % exstr)
+#    exit(0)
+
+    if(True):
+        #insert food insertFood(self, json_data)
         testrecord = json.loads('{"food": "Birne", "calories": 10}')
         dbConnect.insertFood(testrecord)
         testrecord = json.loads('{"food": "Ei", "calories": 100, "fat": 100}')
@@ -148,17 +157,52 @@ def main():
         testrecord = json.loads('{"food": "Clementine", "calories": 10000, "fat": 10000, "carbs": 10000, "protein": 10000}')
         dbConnect.insertFood(testrecord)
 
+        #insert user insertUser(self, json_data)
         testrecord = json.loads('{"username": "Mario", "password": "23r4@~asoiu"}')
         dbConnect.insertUser(testrecord)
-        testrecord = json.loads('{"username": "Mario", "password": "23r4@~asoiu"}')
+        testrecord = json.loads('{"username": "Mario", "password": "rewpu.,sa"}')
         dbConnect.insertUser(testrecord)
-        testrecord = json.loads('{"username": "Mario2", "password": "23r4@~asoiu"}')
+        testrecord = json.loads('{"username": "Mario2", "password": "pß97ölaerlo"}')
         dbConnect.insertUser(testrecord)
-        testrecord = json.loads('{"username": "Mario-3", "password": "23r4@~asoiu"}')
+        testrecord = json.loads('{"username": "Mario-3", "password": "#üä-myölarew"}')
         dbConnect.insertUser(testrecord)
-        testrecord = json.loads('{"username": "Johannes", "password": "23r4@~asoiu"}')
+        testrecord = json.loads('{"username": "Johannes", "password": "2äyxöouryj-m-,o"}')
         dbConnect.insertUser(testrecord)
 
+        testrecord = json.loads('{"1":1.0, "2":2.0}')
+        testrecord = json.loads('{"week":2, "period":3, "targetWeight":82.53,"calories":4334,"protein":845,"carbs":407,"fats":885}')
+        print(json.dumps(testrecord))
+        print("insertTargetDate")
+        #insert target insertTargetData(self, userID, json_data)
+        testrecord = json.loads('{"week":1, "period":2, "targetWeight":92.53,"calories":4334,"protein":845,"carbs":407,"fats":785}')
+        userID = dbConnect.getUserID("Mario")[0]["id"]
+        dbConnect.insertTargetData(userID, testrecord)
+        testrecord = json.loads('{"week":2, "period":3, "targetWeight":82.53,"calories":4334,"protein":845,"carbs":407,"fats":685}')
+        userID = dbConnect.getUserID("Mario")[0]["id"]
+        dbConnect.insertTargetData(userID, testrecord)
+        testrecord = json.loads('{"week":4, "period":1, "targetWeight":78.13,"calories":3843,"protein":545,"carbs":307,"fats":535}')
+        userID = dbConnect.getUserID("Johannes")[0]["id"]
+        dbConnect.insertTargetData(userID, testrecord)
+
+        print("insertDailyData")
+        #insert daily insertDailyData(self, userID, foodID, json_data)
+        testrecord = json.loads('{"amount":434.98}')
+        userID = dbConnect.getUserID("Johannes")[0]["id"]
+        foodID = dbConnect.getFoodID("Birne")[0]["id"]
+        dbConnect.insertDailyData(userID, foodID, testrecord)
+        foodID = dbConnect.getFoodID("Birne")[0]["id"]
+        dbConnect.insertDailyData(userID, foodID, testrecord)
+        foodID = dbConnect.getFoodID("Banane")[0]["id"]
+        dbConnect.insertDailyData(userID, foodID, testrecord)
+        foodID = dbConnect.getFoodID("Ananas")[0]["id"]
+        dbConnect.insertDailyData(userID, foodID, testrecord)
+        foodID = dbConnect.getFoodID("Apfel")[0]["id"]
+        dbConnect.insertDailyData(userID, foodID, testrecord)
+
+        print("updateUserWeight")
+        #update user weight updateUserWeight(self, userID, weight, date)
+        userID = dbConnect.getUserID("Johannes")[0]["id"]
+        dbConnect.updateUserWeight(userID, 90.99)
 
     print(dbConnect.selectFood('%1'))
     # change the JSON string into a JSON object
@@ -215,8 +259,8 @@ def main():
     print("update user weight")
     dbConnect.updateUserWeight(userID,82.7)
 
-    print("get userID for Gandalf")
-    userID = dbConnect.getUserID('Gandalf')[0]
+    print("get userID for Johannes")
+    userID = dbConnect.getUserID('Johannes')[0]
     print(userID)
     for key in userID:
         print("key:   " + key)
@@ -225,9 +269,11 @@ def main():
     print("update user weight")
     dbConnect.updateUserWeight(userID,83.7)
 
-    print("update macro data (protein, fat, carb)")
-    dbConnect.updateMacroData(userID,{"protein":124,"fat":45,"carb":987})
-
+    userID = dbConnect.getUserID("Gandalf")
+    print("Gandalf ID")
+    print(userID)
+    userID = dbConnect.getUserID("Mario")[0]["id"]
+    print(userID)
     print("get all data for user Mario from user table")
     print(dbConnect.selectUser(userID))
 
