@@ -50,13 +50,25 @@ def calculate():
                 
                 db.insertTargetData(user_id, data)
                            
+        #saving targetWeight into database
+        weight = {}
+
+        for i in range(9):
+            weight["targetWeight"] = weekly_df.iloc[i, 2]
+
+            db.insertTargetData(user_id, weight)
+        
         
         #redirect to site showing results
-        return redirect(url_for('/configure/result'))
+        return redirect(url_for('configure.targets'))
 
     return render_template('configure/calculate.html')
         
 
+@bp.route('/targets', methods=('GET', 'POST'))
+@login_required
+def targets():
+    return render_template('configure/targets.html')
 
 def calculate_goals(bodyweight, maintenance):
     """Calculates daily nutritient and calorie goals, as well as target weight for each week
