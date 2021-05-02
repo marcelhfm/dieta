@@ -1,15 +1,22 @@
 {% extends 'base.html' %}
 
-{% block header %}
-  <h1>{% block title %}Calculate Daily Calorie and Nutritient Goals{% endblock %}</h1>
-{% endblock %}
+<h1>{% block title %}Create goals{% endblock %}</h1>
 
 {% block content %}
+<div class="container">
+  <h2 class="display-5">Create calorie and nutrietient goals</h2>
+</div>
+<div class="container">
   <form method="post">
-    <label for="bodyweight">Bodyweight</label>
-    <input name="bodyweight" id="bodyweight" required>
-    <label for="maintenance">Maintenance</label>
-    <input type="maintenance" name="maintenance" id="maintenance" required>
-    <input type="submit" value="Calculate">
+    <div class="mb-3">
+      <label for="bodyweight" class="form-label">Current bodyweight</label>
+      <input type="bodyweight" name="bodyweight" id="bodyweight" required class="form-control" aria-describedby="bodyweightHelp">
+    </div>
+    <div class="mb-3">
+      <label for="maintenance" class="form-label">Maintenance</label>
+      <input type="maintenance" class="form-control" name="maintenance" id="maintenance" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Calculate goals</button>
   </form>
-{% endblock %}
+</div>
+{% endblock  %}
