@@ -29,7 +29,7 @@ def register():
         elif not password:
             error = 'Password is required.'
         elif username == check_username:
-            error = 'User {} is alerady registered.'.format(username)
+            error = 'User {} is already registered.'.format(username)
         
         if error is None:
             data = {
