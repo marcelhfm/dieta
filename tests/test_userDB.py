@@ -42,6 +42,7 @@ def test_getUserID(id):
     db = connectDB()
     user = db.getUserID(id)
     print(user)
+    return user
     
 def test_test():
     pass
@@ -63,7 +64,13 @@ def test_insert_target():
 
 def main():
     print("starting testing...")
-    test_select_user(6)
+    user_id = test_getUserID("testing123")
+    
+    print(type(user_id))
+    user_id = user_id[0]['id']
+    print(user_id)
+    
+    test_select_user(user_id)
     print("finished testing...")
     
 
