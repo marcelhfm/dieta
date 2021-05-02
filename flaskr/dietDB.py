@@ -226,21 +226,31 @@ class Database():
 
         self.logger.debug("Database connection closed...")
 
+################################################################################
+    #
+    # Insert functions to insert a new dataset (row) into the database
+    # 
+################################################################################
     def insertUser(self, json_data):
         """Insert user into database
 
         Args:
-            json_data (.json): json file containing username and password of a user
+            json_data containing:
+            username (String):  Mandatory value - allowed chars: 0-9a-zA-ZäöüßÄÖÜ-
+            password (String):  Mandatory value
             
+        Returns:
+            Success:    last row id (int)
+            Error:      json string ("Error":"Error description")
         """
         self.logger.debug("JSON data:" + json.dumps(json_data))
         
         password = generate_password_hash(json_data["password"])
 
-        m = re.search('[^0-9a-zA-ZäöüßÄÖÜ%-]', json_data["username"], re.UNICODE)
+        m = re.search('[^0-9a-zA-ZäöüßÄÖÜ-]', json_data["username"], re.UNICODE)
         if not (isinstance(m, type(None))):
             self.logger.critical("%s contains illeagal characters which makes select statement tainted!" % json_data["username"])
-            return json.loads('{"Result": "invalid search string: %s"}' % json_data["username"])
+            return json.loads('{"Error": "invalid search string: %s"}' % json_data["username"])
         
         sql = ("insert into user (username, password)" + " values ('" +
                json_data["username"] + "', '" +
@@ -256,47 +266,70 @@ class Database():
         except Exception as ex:
             self.logger.critical(
                 "Could not insert data into database table: " + str(ex))
-            return -1
+            return json.loads('{"Error": "insert failed: %s"}' % str(ex))
         
         try:
             self.conn.commit()
             self.logger.debug("Database insert committed...")
         except Exception as ex:
             self.logger.critical("Could not commit last insert: " + str(ex))
-            return -1
+            return json.loads('{"Error": "commit failed: %s"}' % str(ex))
 
         self.logger.info("Dataset successfully committed to database!")
         return self.cursor.lastrowid
-        
-    # Insert a new dataset (json record) into database
-    # Return the last row id after insert completion
+
+
     def insertFood(self, json_data):
+        """Insert food record
+
+        Args:
+            json_data containing:
+            food (String):      Mandatory value - allowed chars: 0-9a-zA-ZäöüßÄÖÜ-
+            calories (float):   Default = NULL
+            carbs (float):      Default = NULL
+            protein (float):    Default = NULL
+            fat (float):        Default = NULL
+            refDate (datetime): Default = current date
+
+        Returns:
+            Success:    last row id (int)
+            Error:      json string ("Error":"Error description")
+        """
         self.logger.debug("JSON data: " + json.dumps(json_data))
+        # check food for allowed characters
+        m = re.search('[^a-zA-ZäöüßÄÖÜ-]', json_data["food"], re.UNICODE)
+        if not (isinstance(m, type(None))):
+            self.logger.critical("%s contains illeagal characters which makes select statement tainted!" % json_data["food"])
+            return json.loads('{"Error": "invalid string: %s"}' % json_data["food"])
         if not "calories" in json_data:
             json_data["calories"]= "NULL"
             self.logger.error("Insert data: No calories given!")
         else:
-            if not isinstance(json_data["calories"], int):
+            # check if value is a number - int or float
+            if not isinstance(json_data["calories"], (int,float)):
                 self.logger.error("calories is not numeric! : " + str(json_data["calories"]))
-                return json.loads('{"Result": "calories is not numeric: %s"}' % json_data["calories"])
+                return json.loads('{"Error": "calories is not numeric: %s"}' % json_data["calories"])
         if not "carbs" in json_data:
             json_data["carbs"]= "NULL"
         else:
-            if not isinstance(json_data["carbs"], int):
+            # check if value is a number - int or float
+            if not isinstance(json_data["carbs"], (int,float)):
                 self.logger.error("carbs is not numeric! : " + str(json_data["carbs"]))
-                return json.loads('{"Result": "carbs is not numeric: %s"}' % json_data["carbs"])
+                return json.loads('{"Error": "carbs is not numeric: %s"}' % json_data["carbs"])
         if not "protein" in json_data:
             json_data["protein"]= "NULL"
         else:
-            if not isinstance(json_data["protein"], int):
+            # check if value is a number - int or float
+            if not isinstance(json_data["protein"], (int,float)):
                 self.logger.error("protein is not numeric! : " + str(json_data["protein"]))
-                return json.loads('{"Result": "protein is not numeric: %s"}' % json_data["protein"])
+                return json.loads('{"Error": "protein is not numeric: %s"}' % json_data["protein"])
         if not "fat" in json_data:
             json_data["fat"]= "NULL"
         else:
-            if not isinstance(json_data["fat"], int):
+            # check if value is a number - int or float
+            if not isinstance(json_data["fat"], (int,float)):
                 self.logger.error("fat is not numeric! : " + str(json_data["fat"]))
-                return json.loads('{"Result": "fat is not numeric: %s"}' % json_data["fat"])
+                return json.loads('{"Error": "fat is not numeric: %s"}' % json_data["fat"])
         
         sql= ("insert into food (food, calories, carbs, protein, fat)" + " values ('" +
             str(json_data["food"]) + "'," +
@@ -315,260 +348,36 @@ class Database():
             self.logger.debug("Database insert completed...")
         except Exception as ex:
             self.logger.critical("Could not insert data into database table: " + str(ex))
-            return -1
+            return json.loads('{"Error": "insert failed: %s"}' % str(ex))
 
         try:
             self.conn.commit()
             self.logger.debug("Database insert committed...")
         except Exception as ex:
             self.logger.critical("Could not commit last insert: " + str(ex))
-            return -1
+            return json.loads('{"Error": "commit failed: %s"}' % str(ex))
 
         self.logger.info("Dataset successfully committed to database!")
         return self.cursor.lastrowid
 
-    # Insert a new dataset (json record) into database
-    # Return the last row id after insert completion
-    def insertWeekly(self, userID, json_data):
-        self.logger.debug("JSON data: " + json.dumps(json_data))
-        if not "loss" in json_data:
-            json_data["loss"]= "NULL"
-            self.logger.error("Insert data: No loss given!")
-        if not "deficit" in json_data:
-            json_data["deficit"]= "NULL"
-            self.logger.error("Insert data: No deficit given!")
-        if not "protein" in json_data:
-            json_data["protein"]= "NULL"
-            self.logger.error("Insert data: No protein given!")
-        if not "fat" in json_data:
-            json_data["fat"]= "NULL"
-            self.logger.error("Insert data: No fat given!")
-
-        sql= ("insert into weekly (refUserID, loss, deficit, protein, fat)" + " values ('" +
-            userID + "'," +
-            json_data["calories"] + "," +
-            json_data["carbs"] + "," +
-            json_data["protein"] + "," +
-            json_data["fat"] + ")")
-
-        re.sub(r'"NULL"', 'NULL', sql, re.IGNORECASE)
-        self.logger.debug("SQL=" + sql)
-        print("SQL=" + sql)
-
-        try:
-            self.cursor=self.conn.cursor()
-            self.cursor.execute(sql)
-            self.logger.debug("Database insert completed...")
-        except Exception as ex:
-            self.logger.critical("Could not insert data into database table: " + str(ex))
-            return -1
-
-        try:
-            self.conn.commit()
-            self.logger.debug("Database insert committed...")
-        except Exception as ex:
-            self.logger.critical("Could not commit last insert: " + str(ex))
-            return -1
-
-        self.logger.info("Dataset successfully committed to database!")
-        return self.cursor.lastrowid
-
-    def selectFood(self, selectfood):
-        """Select all food records matching selectfood and return json record
-
-        Args:
-            selectfood (String): Search string
-
-        Returns:
-            json: json record
-        """
-        self.logger.debug("food: " + selectfood)
-
-        if (selectfood == "%"):
-            sql = 'select * from food'
-            self.logger.debug("SQL=" + sql)
-        else:
-            m = re.search('[^a-zA-ZäöüßÄÖÜ%]', selectfood, re.UNICODE)
-            if not (isinstance(m, type(None))):
-                self.logger.critical("%s contains illeagal characters which makes select statement tainted!" % selectfood)
-                return json.loads('{"Result": "invalid search string: %s"}' % selectfood)
-            
-            sql= ("select * from food where `food` like '" + selectfood + "'")
-        
-        self.logger.debug("SQL=" + sql)
-
-        try:
-            self.cursor=self.conn.cursor()
-            self.cursor.execute(sql)
-     
-            result = self.cursor.fetchall()
-            #result = [dict((self.cursor.description[i][0], value) \
-            #   for i, value in enumerate(row)) for row in self.cursor.fetchall()]
-
-            self.logger.debug("Database select completed...")
-        except Exception as ex:
-            self.logger.critical("Could not select data from database table: " + str(ex))
-            return -1
-
-        return result
     
-    def selectUser(self, selectid):
-        """Get user data of the specified user via id
-
-        Args:
-            selectid (String): Search string
-
-        Returns:
-            user json data
-        """
-        selectid = str(selectid)
-        
-        self.logger.debug("user: " + str(selectid))
-
-        sql = ("SELECT * FROM user WHERE `id` = '" + str(selectid) + "'")
-
-        self.logger.debug("SQL=" + sql)
-
-        try:
-            self.cursor = self.conn.cursor()
-            self.cursor.execute(sql)
-
-            result = self.cursor.fetchall()
-            self.logger.debug("Database update completed...")
-
-        except Exception as ex:
-            self.logger.critical(
-                "Could not update data in database table: " + str(ex))
-            return -1
-
-        return result
-
-    def getUserID(self, selectuser):
-        """Get id of the specified user
-
-        Args:
-            selectuser (String): Search string
-
-        Returns:
-            user id
-        """
-        self.logger.debug("user: " + selectuser)
-
-        m = re.search('[^0-9a-zA-ZäöüßÄÖÜ-]', selectuser)
-        if not (isinstance(m, type(None))):
-            self.logger.critical(
-                "%s contains illeagal characters which makes select statement tainted!" % selectuser)
-            return json.loads('{"Result": "invalid search string: %s"}' % selectuser)
-        else:
-            sql = ("select id from user where `username` like  '" + selectuser + "'")
-
-        self.logger.debug("SQL=" + sql)
-
-        try:
-            self.cursor = self.conn.cursor()
-            self.cursor.execute(sql)
-
-            result = self.cursor.fetchall()
-            self.logger.debug("Database select completed...")
-
-        except Exception as ex:
-            self.logger.critical(
-                "Could not select data from database table: " + str(ex))
-            self.logger.critical(
-                "sql: " + sql)
-            return -1
-
-        return result
-
-    def getFoodID(self, selectfood):
-        """Get id of the specified food
-
-        Args:
-            selectfood (String): Search string
-
-        Returns:
-            food id
-        """
-        self.logger.debug("user: " + selectfood)
-
-        m = re.search('[^0-9a-zA-ZäöüßÄÖÜ_-]', selectfood)
-        if not (isinstance(m, type(None))):
-            self.logger.critical(
-                "%s contains illeagal characters which makes select statement tainted!" % selectfood)
-            return json.loads('{"Result": "invalid search string: %s"}' % selectfood)
-        else:
-            sql = ("select id from food where `food` like '%s'" % selectfood)
-
-        self.logger.debug("SQL=" + sql)
-
-        try:
-            self.cursor = self.conn.cursor()
-            self.cursor.execute(sql)
-
-            result = self.cursor.fetchall()
-            self.logger.debug("Database select completed...")
-
-        except Exception as ex:
-            self.logger.critical(
-                "Could not select data from database table: " + str(ex))
-            self.logger.critical(
-                "sql: " + sql)
-            return -1
-
-        return result
-
-    def updateUserWeight(self, userID, weight):
-        """Update weight for the specified userID
-
-        Args:
-            userID (String): Search string
-            weight (float): Value to be updated
-
-        Returns:
-            1 for success
-        """
-
-        print(weight)
-        print(userID)
-        self.logger.debug("user: %s weight: %s" % (userID, weight))
-
-        
-        if not isinstance(weight, float):
-            self.logger.critical(
-                "weight is not numeric:" + str(weight))
-            return json.loads('{"Result": "invalid weight value: %s"}' % str(weight))
-        
-        foodID = self.getFoodID('__weight__')[0]
-        for key in foodID:
-            print("key:   " + key)
-            print("value: " + str(foodID[key]))
-            foodID = foodID[key]
-
-        sql = ("insert into `daily` (`refUserID`, `refFoodID`, `currentWeight`) values (%s, %s, %s)" % (userID, foodID, weight))  
-        
-        self.logger.debug("SQL=" + sql)
-
-        try:
-            self.cursor = self.conn.cursor()
-            self.cursor.execute(sql)
-            self.logger.debug("Database update completed...")
-
-        except Exception as ex:
-            self.logger.critical(
-                "Could not update data in database table: " + str(ex))
-            return -1
-
-        return 1
-
     def insertTargetData(self, userID, json_data):
-        """Update macro data for the specified user
+        """Insert target data data for the specified user
 
         Args:
-            userID (String): Search string
-            json_data (dict): "calories":float, "protein":float, ...
+            userID (String):        Mandatory value - reference to user table
+            json_data containing:
+            week (int):             Default = NULL
+            period (int):           Default = NULL
+            targetWeight (float):   Default = NULL
+            calories (float):       Default = NULL
+            protein (float):        Default = NULL
+            carbs (float):          Default = NULL
+            fats (float):           Default = NULL
 
         Returns:
-            1 for success
+            Success:    last row id (int)
+            Error:      json string ("Error":"Error description")
         """
         self.logger.debug("user: " + str(userID) + " data: " + str(json_data))
 
@@ -594,6 +403,291 @@ class Database():
         except Exception as ex:
             self.logger.critical(
                 "Could not update data in database table: " + str(ex))
-            return -1
+            return json.loads('{"Error": "update failed: %s"}' % str(ex))
+
+        try:
+            self.conn.commit()
+            self.logger.debug("Database insert committed...")
+        except Exception as ex:
+            self.logger.critical("Could not commit last insert: " + str(ex))
+            return json.loads('{"Error": "commit failed: %s"}' % str(ex))
+
+        return self.cursor.lastrowid
+
+    def insertUserWeight(self, userID, weight):
+        """Insert user weight for the specified userID
+
+        Args:
+            userID (String): Search string
+            weight (float): Value to be updated
+
+        Returns:
+            Success:    last row id (int)
+            Error:      json string ("Error":"Error description")
+       """
+
+        print(weight)
+        print(userID)
+        self.logger.debug("user: %s weight: %s" % (userID, weight))
+
+        
+        if not isinstance(weight, float):
+            self.logger.critical(
+                "weight is not numeric:" + str(weight))
+            return json.loads('{"Error": "invalid weight value: %s"}' % str(weight))
+        
+        #Current weight record is always linked to the food reference with food name "__weight__"
+        foodID = self.getFoodID('__weight__')[0]
+        for key in foodID:
+            print("key:   " + key)
+            print("value: " + str(foodID[key]))
+            foodID = foodID[key]
+
+        sql = ("insert into `daily` (`refUserID`, `refFoodID`, `currentWeight`) values (%s, %s, %s)" % (userID, foodID, weight))  
+        
+        self.logger.debug("SQL=" + sql)
+
+        try:
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(sql)
+            self.logger.debug("Database update completed...")
+        except Exception as ex:
+            self.logger.critical(
+                "Could not update data in database table: " + str(ex))
+            return json.loads('{"Error": "update failed: %s"}' % str(ex))
+
+        try:
+            self.conn.commit()
+            self.logger.debug("Database insert committed...")
+        except Exception as ex:
+            self.logger.critical("Could not commit last insert: " + str(ex))
+            return json.loads('{"Error": "commit failed: %s"}' % str(ex))
+
+        return self.cursor.lastrowid
+
+################################################################################
+    #
+    # Select functions to extract datasets (rows) from the database
+    # 
+################################################################################
+
+    def selectFood(self, selectfood):
+        """Select all food records matching selectfood and return json record
+
+        Args:
+            selectfood (String): Search string
+
+        Returns:
+            Success:    json records (one or more)
+            Error:      json string ("Error":"Error description")
+        """
+        self.logger.debug("food: " + selectfood)
+
+        if (selectfood == "%"):
+            sql = 'select * from food'
+            self.logger.debug("SQL=" + sql)
+        else:
+            m = re.search('[^a-zA-ZäöüßÄÖÜ%]', selectfood, re.UNICODE)
+            if not (isinstance(m, type(None))):
+                self.logger.critical("%s contains illeagal characters which makes select statement tainted!" % selectfood)
+                return json.loads('{"Error": "invalid search string: %s"}' % selectfood)
+            
+            sql= ("select * from food where `food` like '" + selectfood + "'")
+        
+        self.logger.debug("SQL=" + sql)
+
+        try:
+            self.cursor=self.conn.cursor()
+            self.cursor.execute(sql)
+     
+            result = self.cursor.fetchall()
+            #result = [dict((self.cursor.description[i][0], value) \
+            #   for i, value in enumerate(row)) for row in self.cursor.fetchall()]
+
+            self.logger.debug("Database select completed...")
+        except Exception as ex:
+            self.logger.critical("Could not select data from database table: " + str(ex))
+            return json.loads('{"Error": "select failed: %s"}' % str(ex))
+
+        return result
+    
+################################################################################
+    #
+    # Select functions to extract one dataset (row) from the database
+    # 
+################################################################################
+
+    def getUserID(self, selectuser):
+        """Get id of the specified user
+
+        Args:
+            selectuser (String): Search string
+
+        Returns:
+            Success:    json records (one)
+            Error:      json string ("Error":"Error description")
+        """
+        self.logger.debug("user: " + selectuser)
+
+        m = re.search('[^0-9a-zA-ZäöüßÄÖÜ-]', selectuser)
+        if not (isinstance(m, type(None))):
+            self.logger.critical(
+                "%s contains illeagal characters which makes select statement tainted!" % selectuser)
+            return json.loads('{"Error": "invalid search string: %s"}' % selectuser)
+        else:
+            sql = ("select id from user where `username` like  '" + selectuser + "'")
+
+        self.logger.debug("SQL=" + sql)
+
+        try:
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(sql)
+
+            result = self.cursor.fetchall()
+            self.logger.debug("Database select completed...")
+
+        except Exception as ex:
+            self.logger.critical(
+                "Could not select data from database table: " + str(ex))
+            self.logger.critical(
+                "sql: " + sql)
+            return json.loads('{"Error": "select failed: %s"}' % str(ex))
+
+        if (result.len() > 1):
+            self.logger.critical("More than one datarow is returned!")
+            return json.loads('{"Error": "more than one dataset returned: %s"}' % json.dumps(result))
+
+        return result
+
+    def getFoodID(self, selectfood):
+        """Get id of the specified food
+
+        Args:
+            selectfood (String): Search string
+
+        Returns:
+            Success:    json records (one)
+            Error:      json string ("Error":"Error description")
+        """
+        self.logger.debug("user: " + selectfood)
+
+        m = re.search('[^0-9a-zA-ZäöüßÄÖÜ_-]', selectfood)
+        if not (isinstance(m, type(None))):
+            self.logger.critical(
+                "%s contains illeagal characters which makes select statement tainted!" % selectfood)
+            return json.loads('{"Error": "invalid search string: %s"}' % selectfood)
+        else:
+            sql = ("select id from food where `food` like '%s'" % selectfood)
+
+        self.logger.debug("SQL=" + sql)
+
+        try:
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(sql)
+
+            result = self.cursor.fetchall()
+            self.logger.debug("Database select completed...")
+
+        except Exception as ex:
+            self.logger.critical(
+                "Could not select data from database table: " + str(ex))
+            self.logger.critical(
+                "sql: " + sql)
+            return json.loads('{"Error": "select failed: %s"}' % str(ex))
+        
+        if (result.len() > 1):
+            self.logger.critical("More than one datarow is returned!")
+            return json.loads('{"Error": "more than one dataset returned: %s"}' % json.dumps(result))
+
+        return result
+
+    def selectUser(self, selectid):
+        """Get user data of the specified user via id
+
+        Args:
+            selectid (String): Search string
+
+        Returns:
+            Success:    json records (one)
+            Error:      json string ("Error":"Error description")
+        """
+        selectid = str(selectid)
+        
+        self.logger.debug("user: " + str(selectid))
+
+        sql = ("SELECT * FROM user WHERE `id` = '" + str(selectid) + "'")
+
+        self.logger.debug("SQL=" + sql)
+
+        try:
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(sql)
+
+            result = self.cursor.fetchall()
+            self.logger.debug("Database select completed...")
+
+        except Exception as ex:
+            self.logger.critical(
+                "Could not select data in database table: " + str(ex))
+            return json.loads('{"Error": "select failed: %s"}' % str(ex))
+
+        return result
+
+################################################################################
+    #
+    # Update functions to update one dataset (row) in the database
+    # 
+################################################################################
+    def updateUserWeight(self, userID, weight, date):
+        """Update weight for the specified userID
+
+        Args:
+            userID (String):    Search value
+            weight (float):     Value to be updated
+            date (datetime):    Search value
+
+        Returns:
+            Success:    1
+            Error:      json string ("Error":"Error description")
+        """
+
+        print(weight)
+        print(userID)
+        self.logger.debug("user: %s weight: %s" % (userID, weight))
+
+        
+        if not isinstance(weight, float):
+            self.logger.critical(
+                "weight is not numeric:" + str(weight))
+            return json.loads('{"Error": "invalid weight value: %s"}' % str(weight))
+        
+        #Current weight record is always linked to the food reference with food name "__weight__"
+        foodID = self.getFoodID('__weight__')[0]
+        for key in foodID:
+            print("key:   " + key)
+            print("value: " + str(foodID[key]))
+            foodID = foodID[key]
+
+        sql = ("insert into `daily` (`refUserID`, `refFoodID`, `currentWeight`) values (%s, %s, %s)" % (userID, foodID, weight))  
+        
+        self.logger.debug("SQL=" + sql)
+
+        try:
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(sql)
+            self.logger.debug("Database update completed...")
+
+        except Exception as ex:
+            self.logger.critical(
+                "Could not update data in database table: " + str(ex))
+            return json.loads('{"Error": "update failed: %s"}' % str(ex))
+
+        try:
+            self.conn.commit()
+            self.logger.debug("Database update committed...")
+        except Exception as ex:
+            self.logger.critical("Could not commit last update: " + str(ex))
+            return json.loads('{"Error": "commit failed: %s"}' % str(ex))
 
         return 1
+
