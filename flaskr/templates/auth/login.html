@@ -3,26 +3,20 @@
 <h1>{% block title %}Log In{% endblock %}</h1>
 
 {% block content %}
-<form>
+<div class="container">
+<h1 class="display-5">Log In</h1>
+</div>
+<div class="container">
+<form method="post">
   <div class="mb-3">
-    <label for="exampleInputEmail1" class="form-label">Username</label>
-    <input type="username" class="form-control" id="exampleInputUsername1" aria-describedby="usernameHelp">
+    <label for="username" class="form-label">Username</label>
+    <input type="username" class="form-control" name="username" id="username" required aria-describedby="usernameHelp">
   </div>
   <div class="mb-3">
-    <label for="exampleInputPassword1" class="form-label">Password</label>
-    <input type="password" class="form-control" id="exampleInputPassword1">
+    <label for="password" class="form-label">Password</label>
+    <input type="password" name="password" class="form-control" id="password" required>
   </div>
   <button type="submit" class="btn btn-primary">Log In</button>
 </form>
+</div>
 {% endblock  %}
-
-
-<!--
-  <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
-    <input type="submit" value="Log In">
-  </form>
--->
