@@ -150,7 +150,7 @@ class Database():
             self.logger.debug("Database insert completed...")
         except Exception as ex:
             self.logger.critical("Could not insert data into database table: " + str(ex))
-            return json.loads('{"Error": "insert of default value '__weight__' into table food failed: %s"}' % str(ex))
+            return json.loads('{"Error": "insert of default value __weight__ into table food failed: %s"}' % str(ex))
 
         #daily
         try:
@@ -426,14 +426,14 @@ class Database():
         sql = sql[:-1] + ") values (%s" % userID     # remove last ","
         for key in json_data:
             value = json_data[key]
-            if key in ("week", "period", "targetWeight", "calories", "protein", "carbs", "fats")
+            if key in ("week", "period", "targetWeight", "calories", "protein", "carbs", "fats"):
                 if isinstance(value, (int, float)):
                     sql += " %s, " % value
                 else:
                     sql += " '%s', " % value
             else:
                 self.logger.error("unknown key: %s value: %s" % (key,value))
-                return json.loads('{"Error":"unknown key: %s value: %s" % (key,value))
+                return json.loads('{"Error":"unknown key: %s value: %s" % (key,value)}')
         sql = sql[:-1] + ") "     # remove last ",", then add where-clause
 
         re.sub(r'"NULL"', 'NULL', sql, re.IGNORECASE)
@@ -495,7 +495,7 @@ class Database():
                     sql += " '%s', " % value
             else:
                 self.logger.error("unknown key: %s value: %s" % (key,value))
-                return json.loads('{"Error":"unknown key: %s value: %s" % (key,value))
+                return json.loads('{"Error":"unknown key: %s value: %s" % (key,value)}')
         sql = sql[:-1] + ") "     # remove last ",", then add where-clause
 
         re.sub(r'"NULL"', 'NULL', sql, re.IGNORECASE)
@@ -795,5 +795,5 @@ class Database():
             self.logger.critical("Could not commit last update: " + str(ex))
             return json.loads('{"Error": "commit failed: %s"}' % str(ex))
 
-        return json.loads('{"Success": 1})
+        return json.loads('{"Success": 1}')
 
