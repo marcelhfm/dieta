@@ -38,10 +38,13 @@ def test_select_food(name):
     food = db.selectFood(name)
     print(food)
     
-def test_getUserViaID(id):
+def test_getUserID(id):
     db = connectDB()
-    user = db.getUserViaID(id)
+    user = db.getUserID(id)
     print(user)
+    
+def test_test():
+    pass
     
 def test_insert_target():
     user_id = 6
@@ -60,7 +63,7 @@ def test_insert_target():
 
 def main():
     print("starting testing...")
-    test_insert_target()
+    test_select_user(6)
     print("finished testing...")
     
 
