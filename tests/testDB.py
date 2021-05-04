@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# Umstellung von DB Zugriff auf REST API, Ergänzung um BME280 Sensor
 
 import loadConfig
 import logging
@@ -107,16 +106,12 @@ def main():
     logger.info("Logfile path is set to: " + progoptions['logpath'])
     logger.debug("Logging is enabled in Module: " + __name__)
 
-
     dbConnect = Database(config)
     if(False):
         dbConnect.initDB()
 
-    import re
-    ex="(1062, \"Duplicate entry 'Mario' for key 'userconstraint'\")"
-    exstr = re.sub(r"(['\"])",'=',ex)
-    print("exstr: %s" % exstr)
-#    exit(0)
+    app = Flask(__name__)
+    
 
     if(True):
         #insert food insertFood(self, json_data)
@@ -279,6 +274,24 @@ def main():
 
     dbConnect.closeConnection()
 
+    print(__name__)
+    app.config['SECRET_KEY'] = config.getItem("SOCKETIO_SECRET")
+    socketio = SocketIO(app)
+    if __name__ == '__main__':
+        socketio.run(app,host="192.168.10.66",port=4444)
+
+
+    @app.route('/food/')
+    def sessions():
+        return render_template('session.html')
+
+    def messageReceived(methods=['GET', 'POST']):
+        print('message was received!!!')
+
+    @socketio.on('my event')
+    def handle_my_custom_event(json, methods=['GET', 'POST']):
+        print('received my event: ' + str(json))
+        socketio.emit('my response', json, callback=messageReceived)
 
 
 
