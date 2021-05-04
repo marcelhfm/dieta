@@ -46,28 +46,10 @@
         
         <div class="col-sm">
             <!--WEIGHT DIAGRAM-->
-            <div class="container">
-                <canvas id="chart"></canvas>
-            </div>
+             <div id="curve_chart" style="width: 450; height: 250px"></div>
         </div>
     </div>
 </div>
 
-<script>
-    let chart = document.getElementById('chart').getContext('2d');
-
-    let weightChart = new Chart(chart, {
-        type:'bar', //bar, horizontalBar, pie,line, doughnut, radar, polarArea
-        data:{
-            labels:[1, 2, 3, 4, 5, 6, 7, 8, 9],
-            datasets:[{
-                label:'Bodyweight'
-                data:[90, 70, 60, 50, 50, 50, 50, 30, 10]
-            }]
-        },
-        options:{}
-    });
-</script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.2.0/chart.min.js"></script>
-
+<script type="text/javascript" src="{{ url_for('static', filename='graph.js') }}"></script>
 {% endblock  %}
