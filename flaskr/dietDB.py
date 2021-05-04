@@ -185,7 +185,7 @@ class Database():
         except Exception as ex:
             self.logger.critical("Could not create table weekly! " + str(ex))
             exstr = re.sub(r"(['\"])", '=', str(ex))
-            return json.loads('{"Error": "creation of daily table failed: %s"}' % extr(ex))
+            return json.loads('{"Error": "creation of daily table failed: %s"}' % exstr(ex))
 
         #target
         self.logger.info("creating table target")
@@ -198,11 +198,11 @@ class Database():
                    "  `refUserID` int(11) NOT NULL, "
                    "  `week` int DEFAULT NULL, "
                    "  `period` int DEFAULT NULL, "
-                   "  `targetWeight` decimal(14, 8) DEFAULT NULL,"
-                   "  `calories` decimal(14, 8) DEFAULT NULL, "
-                   "  `protein` decimal(14, 8) DEFAULT NULL, "
-                   "  `carbs` decimal(14, 8) DEFAULT NULL, "
-                   "  `fats` decimal(14, 8) DEFAULT NULL, "
+                   "  `targetWeight` int(11) DEFAULT NULL,"
+                   "  `calories` int(11) DEFAULT NULL, "
+                   "  `protein` int(11) DEFAULT NULL, "
+                   "  `carbs` int(11) DEFAULT NULL, "
+                   "  `fats` int(11) DEFAULT NULL, "
                    "  `refdate` datetime DEFAULT CURRENT_TIMESTAMP, "
                    "  PRIMARY KEY (`id`), "
                    "  FOREIGN KEY (refUserID) REFERENCES user(id) "
@@ -624,6 +624,43 @@ class Database():
                 return json.loads('{"Error": "invalid search string: %s"}' % selectfood)
 
             sql = ("select * from food where `food` like '" + selectfood + "'")
+
+        self.logger.debug("SQL=" + sql)
+
+        try:
+            self.cursor = self.conn.cursor()
+            self.cursor.execute(sql)
+
+            result = self.cursor.fetchall()
+            #result = [dict((self.cursor.description[i][0], value) \
+            #   for i, value in enumerate(row)) for row in self.cursor.fetchall()]
+
+            self.logger.debug("Database select completed...")
+        except Exception as ex:
+            self.logger.critical(
+                "Could not select data from database table: " + str(ex))
+            exstr = re.sub(r"(['\"])", '=', str(ex))
+            return json.loads('{"Error": "select failed: %s"}' % exstr)
+
+        return result
+    
+    def selectTarget(self, user_id, week, period):
+        """Select target data for an existing user for a specific week and period
+        Args:
+            user_id (String): user_id
+            week (int): week to select
+            period (int): period to select
+        Returns:
+            Success:    json records (one or more)
+            Error:      json string ("Error":"Error description")
+        """
+        user_id = str(user_id)
+        week = str(week)
+        period = str(period)
+        
+        self.logger.debug("user_id: " + user_id + ", week:" + week + ", period: " + period)
+
+        sql = ("SELECT * FROM target WHERE `refUserID` LIKE '" + user_id + "' AND `week` LIKE '" + week + "' AND `period` LIKE '" + period + "'")
 
         self.logger.debug("SQL=" + sql)
 

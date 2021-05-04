@@ -13,7 +13,7 @@
         <!--TABLE-->
         <div class="container">
             <table class="table">
-            <thead>
+            <thead class="table-dark">
                 <tr>
                 <th scope="col">Week</th>
                 <th scope="col">Period</th>
@@ -24,23 +24,21 @@
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                <th scope="row">1</th>
-                <td>Mark</td>
-                <td>Otto</td>
-                <td>@mdo</td>
-                </tr>
-                <tr>
-                <th scope="row">2</th>
-                <td>Jacob</td>
-                <td>Thornton</td>
-                <td>@fat</td>
-                </tr>
-                <tr>
-                <th scope="row">3</th>
-                <td colspan="2">Larry the Bird</td>
-                <td>@twitter</td>
-                </tr>
+                {% for row in rows %}
+                    <!--First Week-->
+                    <tr>
+                    <th scope="row">
+                    {% if row['period'] < 2 %}
+                    {{row['week']}}
+                    {% endif %}
+                    </th>
+                    <td>{{row['period']}}</td>
+                    <td>{{row['calories']}}</td>
+                    <td>{{row['protein']}}</td>
+                    <td>{{row['carbs']}}</td>
+                    <td>{{row['fats']}}</td>
+                    </tr>
+                {% endfor %}
             </tbody>
             </table>
             </div>

@@ -169,10 +169,10 @@ def test_data_creation(bodyweigt, maintenance):
     data = {}
     #saving into target table (except targetWeight)
     for i in range(9):
-        data["week"] = i
+        data["week"] = i + 1
         for j in range(3):
             x = round(1.1 + i + j * 0.1, 1)
-            data["period"] = j
+            data["period"] = j + 1
             data["calories"] = macro_df.loc[x, "calories"]
             data["protein"] = macro_df.loc[x, "protein"]
             data["carbs"] = macro_df.loc[x, "carbs"]
@@ -187,6 +187,7 @@ def test_insert_weight(bodyweigt, maintenance):
     weight = {}
     
     for i in range(9):
+        weight["week"] = i + 1
         weight["targetWeight"] = weekly_df.iloc[i, 2]
         
         db.insertTargetData(124, weight)
@@ -198,8 +199,25 @@ def test_iteration():
         for j in range(3):
             print(round(1.1 + i + j * 0.1, 1))
     
+def test_select_target(user_id, week, period):
+    db = connectDB()
+    row = db.selectTarget(user_id, week, period)
+    print(row)
+    
+def test_collect_data():
+    user_id = 1
+    data = []
+    db = connectDB()
+    #collect data
+    for i in range(9):
+        for j in range(3):
+            row = db.selectTarget(user_id=user_id, week=i + 1, period=j + 1)
+            data.append(row[0])
+            
+    print(data)
+    
 def main():
-    test_insert_weight(80, 2500)
+    test_collect_data()
 
 if __name__ == "__main__":
     main()

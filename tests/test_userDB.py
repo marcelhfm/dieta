@@ -64,13 +64,7 @@ def test_insert_target():
 
 def main():
     print("starting testing...")
-    user_id = test_getUserID("testing123")
-    
-    print(type(user_id))
-    user_id = user_id[0]['id']
-    print(user_id)
-    
-    test_select_user(user_id)
+    execute_initDB()
     print("finished testing...")
     
 
