@@ -39,10 +39,10 @@ def calculate():
         
         #saving into target table (except targetWeight)
         for i in range(9):
-            data["week"] = i
+            data["week"] = i + 1
             for j in range(3):
                 x = round(1.1 + i + j * 0.1, 1)
-                data["period"] = j
+                data["period"] = j + 1
                 data["calories"] = macro_df.loc[x, "calories"]
                 data["protein"] = macro_df.loc[x, "protein"]
                 data["carbs"] = macro_df.loc[x, "carbs"]
@@ -54,6 +54,7 @@ def calculate():
         weight = {}
 
         for i in range(9):
+            weight["week"] = i + 1
             weight["targetWeight"] = weekly_df.iloc[i, 2]
 
             db.insertTargetData(user_id, weight)
@@ -68,7 +69,20 @@ def calculate():
 @bp.route('/targets', methods=('GET', 'POST'))
 @login_required
 def targets():
-    return render_template('configure/targets.html')
+    user_id = session.get('user_id')
+    data= []
+    
+    #Initialize connection to database
+    config = loadConfig.Config('diet.json')
+    db = Database(config)
+    
+    #collect data
+    for i in range(9):
+        for j in range(3):
+            row = db.selectTarget(user_id=user_id, week=i + 1, period=j + 1)
+            data.append(row[0])
+    
+    return render_template('configure/targets.html', rows=data)
 
 def calculate_goals(bodyweight, maintenance):
     """Calculates daily nutritient and calorie goals, as well as target weight for each week
