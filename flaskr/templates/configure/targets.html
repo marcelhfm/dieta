@@ -45,11 +45,139 @@
         </div>
         
         <div class="col-sm">
-            <!--WEIGHT DIAGRAM-->
-             <div id="curve_chart" style="width: 450; height: 250px"></div>
+            <div class="container">
+                <!--DIAGRAMS-->
+                <div id="weight" style="width: 600px; height: 300px"></div>
+                <div id="nutrients" style="width: 600px; height: 300px"></div>
+                <div id="calories" style="width: 600px; height: 300px"></div>
+            </div>
         </div>
     </div>
 </div>
 
-<script type="text/javascript" src="{{ url_for('static', filename='graph.js') }}"></script>
+<script type="text/javascript">
+google.charts.load('current', { 'packages': ['corechart'] });
+google.charts.setOnLoadCallback(drawChart);
+
+function drawChart() {
+    var data = google.visualization.arrayToDataTable([
+        ['Week', 'calories'],
+        ['1', {{ rows[0]['calories'] }}],
+        ['', {{ rows[1]['calories'] }}],
+        ['', {{ rows[2]['calories'] }}],
+        ['2', {{ rows[3]['calories'] }}],
+        ['', {{ rows[4]['calories'] }}],
+        ['', {{ rows[5]['calories'] }}],
+        ['3', {{ rows[6]['calories'] }}],
+        ['', {{ rows[7]['calories'] }}],
+        ['', {{ rows[8]['calories'] }}],
+        ['4', {{ rows[9]['calories'] }}],
+        ['', {{ rows[10]['calories'] }}],
+        ['', {{ rows[11]['calories'] }}],
+        ['5', {{ rows[12]['calories'] }}],
+        ['', {{ rows[13]['calories'] }}],
+        ['', {{ rows[14]['calories'] }}],
+        ['6', {{ rows[15]['calories'] }}],
+        ['', {{ rows[16]['calories'] }}],
+        ['', {{ rows[17]['calories'] }}],
+        ['7', {{ rows[18]['calories'] }}],
+        ['', {{ rows[19]['calories'] }}],
+        ['', {{ rows[20]['calories'] }}],
+        ['8', {{ rows[21]['calories'] }}],
+        ['', {{ rows[22]['calories'] }}],
+        ['', {{ rows[23]['calories'] }}],
+        ['9', {{ rows[24]['calories'] }}],
+        ['', {{ rows[25]['calories'] }}],
+        ['', {{ rows[26]['calories'] }}],
+    ]);
+ 
+    var options = {
+        title: 'Calories throughout Diet',
+        curveType: 'function',
+        legend: { position: 'bottom' }
+    };
+
+    var chart = new google.visualization.LineChart(document.getElementById('calories'));
+
+    chart.draw(data, options);
+}
+</script>
+
+<script type="text/javascript">
+google.charts.load('current', { 'packages': ['corechart'] });
+google.charts.setOnLoadCallback(drawChart);
+
+function drawChart() {
+    var data = google.visualization.arrayToDataTable([
+        ['Week', 'Protein', 'Carbs', 'Fats'],
+        ['1', {{ rows[0]['protein'] }}, {{ rows[0]['carbs'] }}, {{ rows[0]['fats'] }}],
+        ['', {{ rows[1]['protein'] }}, {{ rows[1]['carbs'] }}, {{ rows[1]['fats'] }}],
+        ['', {{ rows[2]['protein'] }}, {{ rows[2]['carbs'] }}, {{ rows[2]['fats'] }}],
+        ['2', {{ rows[3]['protein'] }}, {{ rows[3]['carbs'] }}, {{ rows[3]['fats'] }}],
+        ['', {{ rows[4]['protein'] }}, {{ rows[4]['carbs'] }}, {{ rows[4]['fats'] }}],
+        ['', {{ rows[5]['protein'] }}, {{ rows[5]['carbs'] }}, {{ rows[5]['fats'] }}],
+        ['3', {{ rows[6]['protein'] }}, {{ rows[6]['carbs'] }}, {{ rows[6]['fats'] }}],
+        ['', {{ rows[7]['protein'] }}, {{ rows[7]['carbs'] }}, {{ rows[7]['fats'] }}],
+        ['', {{ rows[8]['protein'] }}, {{ rows[8]['carbs'] }}, {{ rows[8]['fats'] }}],
+        ['4', {{ rows[9]['protein'] }}, {{ rows[9]['carbs'] }}, {{ rows[9]['fats'] }}],
+        ['', {{ rows[10]['protein'] }}, {{ rows[10]['carbs'] }}, {{ rows[10]['fats'] }}],
+        ['', {{ rows[11]['protein'] }}, {{ rows[11]['carbs'] }}, {{ rows[11]['fats'] }}],
+        ['5', {{ rows[12]['protein'] }}, {{ rows[12]['carbs'] }}, {{ rows[12]['fats'] }}],
+        ['', {{ rows[13]['protein'] }}, {{ rows[13]['carbs'] }}, {{ rows[13]['fats'] }}],
+        ['', {{ rows[14]['protein'] }}, {{ rows[14]['carbs'] }}, {{ rows[14]['fats'] }}],
+        ['6', {{ rows[15]['protein'] }}, {{ rows[15]['carbs'] }}, {{ rows[15]['fats'] }}],
+        ['', {{ rows[16]['protein'] }}, {{ rows[16]['carbs'] }}, {{ rows[16]['fats'] }}],
+        ['', {{ rows[17]['protein'] }}, {{ rows[17]['carbs'] }}, {{ rows[17]['fats'] }}],
+        ['7', {{ rows[18]['protein'] }}, {{ rows[18]['carbs'] }}, {{ rows[18]['fats'] }}],
+        ['', {{ rows[19]['protein'] }}, {{ rows[19]['carbs'] }}, {{ rows[19]['fats'] }}],
+        ['', {{ rows[20]['protein'] }}, {{ rows[20]['carbs'] }}, {{ rows[20]['fats'] }}],
+        ['8', {{ rows[21]['protein'] }}, {{ rows[21]['carbs'] }}, {{ rows[21]['fats'] }}],
+        ['', {{ rows[22]['protein'] }}, {{ rows[22]['carbs'] }}, {{ rows[22]['fats'] }}],
+        ['', {{ rows[23]['protein'] }}, {{ rows[23]['carbs'] }}, {{ rows[23]['fats'] }}],
+        ['9', {{ rows[24]['protein'] }}, {{ rows[24]['carbs'] }}, {{ rows[24]['fats'] }}],
+        ['', {{ rows[25]['protein'] }}, {{ rows[25]['carbs'] }}, {{ rows[25]['fats'] }}],
+        ['', {{ rows[26]['protein'] }}, {{ rows[26]['carbs'] }}, {{ rows[26]['fats'] }}],
+    ]);
+ 
+    var options = {
+        title: 'Nutrients throughout Diet',
+        curveType: 'function',
+        legend: { position: 'bottom' }
+    };
+
+    var chart = new google.visualization.LineChart(document.getElementById('nutrients'));
+
+    chart.draw(data, options);
+}
+</script>
+
+<script type="text/javascript">
+google.charts.load('current', { 'packages': ['corechart'] });
+google.charts.setOnLoadCallback(drawChart);
+
+function drawChart() {
+    var data = google.visualization.arrayToDataTable([
+        ['Week', 'Bodyweight'],
+        ['1', {{ weight[0] }}],
+        ['2', {{ weight[1] }}],
+        ['3', {{ weight[2] }}],
+        ['4', {{ weight[3] }}],
+        ['5', {{ weight[4] }}],
+        ['6', {{ weight[5] }}],
+        ['7', {{ weight[6] }}],
+        ['8', {{ weight[7] }}],
+        ['9', {{ weight[8] }}],
+    ]);
+ 
+    var options = {
+        title: 'Weight Progress',
+        curveType: 'function',
+        legend: { position: 'bottom' }
+    };
+
+    var chart = new google.visualization.LineChart(document.getElementById('weight'));
+
+    chart.draw(data, options);
+}
+</script>
 {% endblock  %}
