@@ -152,7 +152,7 @@ def calculate_goals(bodyweight, maintenance):
     daily_df = daily_df.round(0)
     weekly_df = weekly_df.round({"loss": 4, "deficit": 0, "weight": 2})
     macro_df = macro_df.round(0)
-
+    
     return weekly_df, daily_df, macro_df
 
 def test_calculate(bodyweigt, maintenance):
@@ -191,8 +191,6 @@ def test_insert_weight(bodyweigt, maintenance):
         weight["targetWeight"] = weekly_df.iloc[i, 2]
         
         db.insertTargetData(124, weight)
-
-
         
 def test_iteration():
     for i in range(9):
@@ -204,9 +202,15 @@ def test_select_target(user_id, week, period):
     row = db.selectTarget(user_id, week, period)
     print(row)
     
+def test_select_targetWeight(user_id, week):
+    db = connectDB()
+    weight = db.selectTargetWeight(user_id, week)
+    print(weight)
+    
 def test_collect_data():
     user_id = 1
     data = []
+    weight = []
     db = connectDB()
     #collect data
     for i in range(9):
@@ -214,7 +218,13 @@ def test_collect_data():
             row = db.selectTarget(user_id=user_id, week=i + 1, period=j + 1)
             data.append(row[0])
             
-    print(data)
+        #collect Weight data
+        wgt = db.selectTargetWeight(user_id, i + 1)
+        weight.append(wgt[0]['targetWeight'])
+        
+    
+            
+    print(weight)
     
 def main():
     test_collect_data()
