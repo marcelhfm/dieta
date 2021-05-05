@@ -32,7 +32,7 @@ def calculate():
         config = loadConfig.Config('diet.json')
         db = Database(config)
             
-        daily_df, weekly_df, macro_df = calculate_goals(bodyweight=bodyweight, maintenance=maintenance)
+        weekly_df, daily_df, macro_df = calculate_goals(bodyweight=bodyweight, maintenance=maintenance)
         
         user_id = session.get('user_id')
         data = {}
@@ -70,8 +70,8 @@ def calculate():
 @login_required
 def targets():
     user_id = session.get('user_id')
-    data= []
-    
+    data = []
+    weight = []
     #Initialize connection to database
     config = loadConfig.Config('diet.json')
     db = Database(config)
@@ -81,8 +81,13 @@ def targets():
         for j in range(3):
             row = db.selectTarget(user_id=user_id, week=i + 1, period=j + 1)
             data.append(row[0])
+            
+        #collect Weight data
+        wgt = db.selectTargetWeight(user_id, i + 1)
+        weight.append(wgt[0]['targetWeight'])
+
     
-    return render_template('configure/targets.html', rows=data)
+    return render_template('configure/targets.html', rows=data, weight=weight)
 
 def calculate_goals(bodyweight, maintenance):
     """Calculates daily nutritient and calorie goals, as well as target weight for each week
@@ -133,7 +138,7 @@ def calculate_goals(bodyweight, maintenance):
 
     #Creating macro_df dataframe
     indices = [1.1, 1.2, 1.3, 2.1, 2.2, 2.3, 3.1, 3.2, 3.3, 4.1, 4.2, 4.3, 5.1,
-                5.2, 5.3, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3, 9.1, 9.2, 9.3]
+               5.2, 5.3, 6.1, 6.2, 6.3, 7.1, 7.2, 7.3, 8.1, 8.2, 8.3, 9.1, 9.2, 9.3]
     macro_df = pd.DataFrame(index=indices)
     cals = [daily_df.calories[0], daily_df.calories[0], daily_df.calories[0],
             daily_df.calories[1] - 0.2 *
@@ -212,7 +217,7 @@ def calculate_goals(bodyweight, maintenance):
                 daily_df.fats_pctg.iloc[8] / 9.3 + 1
 
     macro_df["carbs"] = (macro_df["calories"] - (macro_df["protein"]
-                                                    * 4.1) - (macro_df["fats"] * 9.3)) / 4.1
+                                                 * 4.1) - (macro_df["fats"] * 9.3)) / 4.1
 
     #Cleanup
     daily_df = daily_df.drop(["fats_pctg", "protein_per_kg"], axis=1)
